@@ -228,6 +228,44 @@ public class DatingAppApiClient
         return messages;
     }
 
+    // ─── Photo Upload ──────────────────────────────────────────
+
+    /// <summary>Upload a profile photo for the authenticated bot user</summary>
+    public async Task<bool> UploadPhotoAsync(byte[] imageBytes, string fileName, string token, CancellationToken ct)
+    {
+        try
+        {
+            using var content = new MultipartFormDataContent();
+            var fileContent = new ByteArrayContent(imageBytes);
+            fileContent.Headers.ContentType = new System.Net.Http.Headers.MediaTypeHeaderValue("image/jpeg");
+            content.Add(fileContent, "Photo", fileName);
+            content.Add(new StringContent("true"), "IsPrimary");
+            content.Add(new StringContent("1"), "DisplayOrder");
+
+            var request = new HttpRequestMessage(HttpMethod.Post, $"{_endpoints.PhotoService}/api/Photos")
+            {
+                Content = content
+            };
+            request.Headers.Authorization = new AuthenticationHeaderValue("Bearer", token);
+
+            var response = await _http.SendAsync(request, ct);
+            if (response.IsSuccessStatusCode)
+            {
+                _logger.LogInformation("Photo uploaded successfully for bot");
+                return true;
+            }
+
+            var body = await response.Content.ReadAsStringAsync(ct);
+            _logger.LogWarning("Photo upload failed: {Status} {Body}", response.StatusCode, body);
+            return false;
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError(ex, "Photo upload exception");
+            return false;
+        }
+    }
+
     // ─── Safety (block/report awareness) ────────────────────────
 
     /// <summary>Check if a specific user has blocked us</summary>

@@ -31,6 +31,9 @@ public class BotState
     public int MatchCount { get; set; }
     public int ConversationCount { get; set; }
     
+    /// <summary>Whether profile photo has been uploaded (only happens once)</summary>
+    public bool PhotoUploaded { get; set; }
+    
     // ─── Conversation guards ────────────────────────────────────
     // Tracks per-user message counts to prevent spam / harassment
     // Serialized as JSON: { "keycloakId": messageCount, ... }

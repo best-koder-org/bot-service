@@ -25,8 +25,9 @@
   </ItemGroup>
 
   <ItemGroup>
-    <Content Update="Personas\**\*.json" CopyToOutputDirectory="PreserveNewest" />
-    <Content Update="Content\**\*.json" CopyToOutputDirectory="PreserveNewest" />
+    <Content Update="Personas/**/*.json" CopyToOutputDirectory="PreserveNewest" />
+    <None Include="Personas/photos/*.png" CopyToOutputDirectory="PreserveNewest" />
+    <Content Update="Content/**/*.json" CopyToOutputDirectory="PreserveNewest" />
   </ItemGroup>
 
 </Project>

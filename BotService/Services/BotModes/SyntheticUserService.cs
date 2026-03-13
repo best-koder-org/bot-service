@@ -115,6 +115,12 @@ public class SyntheticUserService : BackgroundService
 
                 if (existingState is { Status: BotStatus.Active })
                 {
+                    // Already active — but check if photo still needs uploading
+                    if (!existingState.PhotoUploaded)
+                    {
+                        var (tok, _, _) = await keycloak.GetBotTokenAsync(persona, ct);
+                        await UploadBotPhotoAsync(persona, apiClient, tok, existingState, db, ct);
+                    }
                     _logger.LogDebug("Bot {Id} already active, skipping provision", persona.Id);
                     continue;
                 }
@@ -167,11 +173,51 @@ public class SyntheticUserService : BackgroundService
                 await db.SaveChangesAsync(ct);
                 _logger.LogInformation("Provisioned synthetic bot: {Id} (profile={ProfileId})",
                     persona.Id, profileId);
+
+                // Upload profile photo if not yet done
+                var state = existingState ?? await db.BotStates
+                    .FirstOrDefaultAsync(b => b.PersonaId == persona.Id, ct);
+                if (state != null && !state.PhotoUploaded)
+                {
+                    await UploadBotPhotoAsync(persona, apiClient, accessToken, state, db, ct);
+                }
             }
             catch (Exception ex)
             {
                 _logger.LogError(ex, "Failed to provision bot {Id}", persona.Id);
             }
+        }
+    }
+
+
+    /// <summary>Upload a persona photo to photo-service (only once per bot)</summary>
+    private async Task UploadBotPhotoAsync(
+        BotPersona persona, DatingAppApiClient apiClient, string token,
+        BotState state, BotDbContext db, CancellationToken ct)
+    {
+        try
+        {
+            // Look for photo file: Personas/photos/{personaId}.png
+            var photoPath = Path.Combine(AppContext.BaseDirectory, "Personas", "photos", $"{persona.Id}.png");
+            if (!File.Exists(photoPath))
+            {
+                _logger.LogDebug("No photo file for bot {Id} at {Path}", persona.Id, photoPath);
+                return;
+            }
+
+            var imageBytes = await File.ReadAllBytesAsync(photoPath, ct);
+            var uploaded = await apiClient.UploadPhotoAsync(imageBytes, $"{persona.Id}.png", token, ct);
+            
+            if (uploaded)
+            {
+                state.PhotoUploaded = true;
+                await db.SaveChangesAsync(ct);
+                _logger.LogInformation("📸 Uploaded profile photo for bot {Id}", persona.Id);
+            }
+        }
+        catch (Exception ex)
+        {
+            _logger.LogWarning(ex, "Photo upload failed for bot {Id} — will retry next start", persona.Id);
         }
     }
 
