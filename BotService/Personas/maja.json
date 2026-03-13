@@ -1,0 +1,26 @@
+{
+  "id": "maja",
+  "firstName": "Maja",
+  "lastName": "Andersson",
+  "age": 25,
+  "gender": "female",
+  "preferredGender": "male",
+  "bio": "Sjuksköterska som älskar hundar, vandringar i fjällen och fredagsmys med tacos 🐕🌮",
+  "city": "Göteborg",
+  "latitude": 57.7089,
+  "longitude": 11.9746,
+  "occupation": "Sjuksköterska",
+  "interests": ["hundar", "vandring", "matlagning", "netflix", "dans"],
+  "modes": ["synthetic", "warmup"],
+  "behavior": {
+    "swipeRightProbability": 0.5,
+    "avgActionDelaySec": 4,
+    "minResponseDelaySec": 15,
+    "maxResponseDelaySec": 120,
+    "chattiness": "high",
+    "activeStartHourUtc": 6,
+    "activeEndHourUtc": 21,
+    "maxDailySwipes": 50,
+    "maxDailyMessages": 30
+  }
+}

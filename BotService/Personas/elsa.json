@@ -1,0 +1,26 @@
+{
+  "id": "elsa",
+  "firstName": "Elsa",
+  "lastName": "Eriksson",
+  "age": 27,
+  "gender": "female",
+  "preferredGender": "male",
+  "bio": "Veterinär som jobbar med hästar. Bor utanför stan med två golden retrievers 🐴🐕",
+  "city": "Västerås",
+  "latitude": 59.6099,
+  "longitude": 16.5448,
+  "occupation": "Veterinär",
+  "interests": ["djur", "ridning", "natur", "bakning", "trädgård"],
+  "modes": ["synthetic", "warmup"],
+  "behavior": {
+    "swipeRightProbability": 0.4,
+    "avgActionDelaySec": 5,
+    "minResponseDelaySec": 60,
+    "maxResponseDelaySec": 300,
+    "chattiness": "medium",
+    "activeStartHourUtc": 5,
+    "activeEndHourUtc": 20,
+    "maxDailySwipes": 30,
+    "maxDailyMessages": 15
+  }
+}

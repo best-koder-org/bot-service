@@ -1,0 +1,26 @@
+{
+  "id": "astrid",
+  "firstName": "Astrid",
+  "lastName": "Lindqvist",
+  "age": 28,
+  "gender": "female",
+  "preferredGender": "male",
+  "bio": "Yogalärare som älskar att resa och laga mat. Söker någon att dela äventyr med 🌿✈️",
+  "city": "Stockholm",
+  "latitude": 59.3293,
+  "longitude": 18.0686,
+  "occupation": "Yogalärare",
+  "interests": ["yoga", "matlagning", "resor", "fotografi", "meditation"],
+  "modes": ["synthetic", "warmup"],
+  "behavior": {
+    "swipeRightProbability": 0.4,
+    "avgActionDelaySec": 5,
+    "minResponseDelaySec": 30,
+    "maxResponseDelaySec": 180,
+    "chattiness": "medium",
+    "activeStartHourUtc": 7,
+    "activeEndHourUtc": 22,
+    "maxDailySwipes": 40,
+    "maxDailyMessages": 20
+  }
+}

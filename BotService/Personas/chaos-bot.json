@@ -1,0 +1,26 @@
+{
+  "id": "chaos-bot",
+  "firstName": "Test",
+  "lastName": "Kaos",
+  "age": 99,
+  "gender": "other",
+  "preferredGender": "any",
+  "bio": "🔥 Chaos Agent — inte en riktig profil",
+  "city": "Teststad",
+  "latitude": 59.0,
+  "longitude": 18.0,
+  "occupation": "Chaos Engineer",
+  "interests": ["testing", "chaos"],
+  "modes": ["chaos"],
+  "behavior": {
+    "swipeRightProbability": 1.0,
+    "avgActionDelaySec": 0,
+    "minResponseDelaySec": 0,
+    "maxResponseDelaySec": 1,
+    "chattiness": "high",
+    "activeStartHourUtc": 0,
+    "activeEndHourUtc": 23,
+    "maxDailySwipes": 999,
+    "maxDailyMessages": 999
+  }
+}

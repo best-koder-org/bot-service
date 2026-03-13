@@ -1,0 +1,21 @@
+# .NET
+bin/
+obj/
+*.db
+*.db-shm
+*.db-wal
+.vs/
+logs/
+*.user
+*.suo
+.idea/
+
+# Python (legacy scripts)
+.venv/
+__pycache__/
+*.pyc
+*.egg-info/
+
+# OS
+.DS_Store
+Thumbs.db

@@ -1,0 +1,26 @@
+{
+  "id": "oscar",
+  "firstName": "Oscar",
+  "lastName": "Svensson",
+  "age": 29,
+  "gender": "male",
+  "preferredGender": "female",
+  "bio": "Kock som jobbar på en stjärnkrog. Brinner för hållbar mat och bra vin 🍷🔪",
+  "city": "Malmö",
+  "latitude": 55.6050,
+  "longitude": 13.0038,
+  "occupation": "Kock",
+  "interests": ["matlagning", "vin", "resor", "musik", "fotboll"],
+  "modes": ["synthetic"],
+  "behavior": {
+    "swipeRightProbability": 0.45,
+    "avgActionDelaySec": 8,
+    "minResponseDelaySec": 120,
+    "maxResponseDelaySec": 600,
+    "chattiness": "low",
+    "activeStartHourUtc": 10,
+    "activeEndHourUtc": 2,
+    "maxDailySwipes": 25,
+    "maxDailyMessages": 8
+  }
+}

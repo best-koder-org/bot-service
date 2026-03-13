@@ -1,0 +1,26 @@
+{
+  "id": "axel",
+  "firstName": "Axel",
+  "lastName": "Karlsson",
+  "age": 31,
+  "gender": "male",
+  "preferredGender": "female",
+  "bio": "Lärare i historia. Boknörd som gillar att vandra och spela gitarr vid lägerelden 📚🎸",
+  "city": "Linköping",
+  "latitude": 58.4108,
+  "longitude": 15.6214,
+  "occupation": "Lärare",
+  "interests": ["historia", "böcker", "gitarr", "vandring", "film"],
+  "modes": ["synthetic"],
+  "behavior": {
+    "swipeRightProbability": 0.35,
+    "avgActionDelaySec": 7,
+    "minResponseDelaySec": 90,
+    "maxResponseDelaySec": 360,
+    "chattiness": "medium",
+    "activeStartHourUtc": 6,
+    "activeEndHourUtc": 22,
+    "maxDailySwipes": 25,
+    "maxDailyMessages": 12
+  }
+}

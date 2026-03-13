@@ -1,0 +1,26 @@
+{
+  "id": "noah",
+  "firstName": "Noah",
+  "lastName": "Pettersson",
+  "age": 24,
+  "gender": "male",
+  "preferredGender": "female",
+  "bio": "Personlig tränare och hälsocoach. Gillar att surfa, laga smoothies och dansa salsa 🏄‍♂️💃",
+  "city": "Malmö",
+  "latitude": 55.6109,
+  "longitude": 12.9952,
+  "occupation": "Personlig tränare",
+  "interests": ["surf", "fitness", "dans", "hälsa", "matlagning"],
+  "modes": ["synthetic", "warmup", "load"],
+  "behavior": {
+    "swipeRightProbability": 0.55,
+    "avgActionDelaySec": 3,
+    "minResponseDelaySec": 10,
+    "maxResponseDelaySec": 90,
+    "chattiness": "high",
+    "activeStartHourUtc": 6,
+    "activeEndHourUtc": 23,
+    "maxDailySwipes": 60,
+    "maxDailyMessages": 35
+  }
+}

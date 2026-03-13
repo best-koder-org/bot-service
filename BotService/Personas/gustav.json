@@ -1,0 +1,26 @@
+{
+  "id": "gustav",
+  "firstName": "Gustav",
+  "lastName": "Nilsson",
+  "age": 34,
+  "gender": "male",
+  "preferredGender": "female",
+  "bio": "Arkitekt med passion för skandinavisk design. Bygger möbler och dricker craft-öl 🏗️🍺",
+  "city": "Göteborg",
+  "latitude": 57.7010,
+  "longitude": 11.9672,
+  "occupation": "Arkitekt",
+  "interests": ["design", "snickeri", "öl", "arkitektur", "cykling"],
+  "modes": ["synthetic", "load"],
+  "behavior": {
+    "swipeRightProbability": 0.25,
+    "avgActionDelaySec": 10,
+    "minResponseDelaySec": 180,
+    "maxResponseDelaySec": 600,
+    "chattiness": "low",
+    "activeStartHourUtc": 7,
+    "activeEndHourUtc": 21,
+    "maxDailySwipes": 20,
+    "maxDailyMessages": 5
+  }
+}

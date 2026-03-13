@@ -1,0 +1,26 @@
+{
+  "id": "wilma",
+  "firstName": "Wilma",
+  "lastName": "Larsson",
+  "age": 30,
+  "gender": "female",
+  "preferredGender": "male",
+  "bio": "Product manager på Spotify. Musikälskare, vinylsamlare, och amatörkock 🎵🍳",
+  "city": "Stockholm",
+  "latitude": 59.3325,
+  "longitude": 18.0649,
+  "occupation": "Product Manager",
+  "interests": ["musik", "vinyl", "matlagning", "podcasts", "yoga"],
+  "modes": ["synthetic"],
+  "behavior": {
+    "swipeRightProbability": 0.3,
+    "avgActionDelaySec": 8,
+    "minResponseDelaySec": 120,
+    "maxResponseDelaySec": 480,
+    "chattiness": "low",
+    "activeStartHourUtc": 8,
+    "activeEndHourUtc": 22,
+    "maxDailySwipes": 20,
+    "maxDailyMessages": 8
+  }
+}

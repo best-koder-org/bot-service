@@ -1,0 +1,26 @@
+{
+  "id": "saga",
+  "firstName": "Saga",
+  "lastName": "Johansson",
+  "age": 23,
+  "gender": "female",
+  "preferredGender": "male",
+  "bio": "Studerar på KTH, gillar spelkvällar brädspel och spontana utflykter. Skicka memes! 🎲😂",
+  "city": "Stockholm",
+  "latitude": 59.3470,
+  "longitude": 18.0728,
+  "occupation": "Student",
+  "interests": ["brädspel", "programmering", "memes", "fika", "klättring"],
+  "modes": ["synthetic", "warmup"],
+  "behavior": {
+    "swipeRightProbability": 0.6,
+    "avgActionDelaySec": 2,
+    "minResponseDelaySec": 5,
+    "maxResponseDelaySec": 60,
+    "chattiness": "high",
+    "activeStartHourUtc": 10,
+    "activeEndHourUtc": 1,
+    "maxDailySwipes": 60,
+    "maxDailyMessages": 40
+  }
+}
