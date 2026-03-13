@@ -3,8 +3,11 @@ using BotService.Data;
 using BotService.Services;
 using BotService.Services.BotModes;
 using BotService.Services.Content;
+using BotService.Services.Conversation;
 using BotService.Services.Keycloak;
+using BotService.Services.Llm;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.Options;
 using Serilog;
 
 var builder = WebApplication.CreateBuilder(args);
@@ -32,6 +35,9 @@ builder.Services.AddDbContext<BotDbContext>(options =>
 // HTTP clients
 builder.Services.AddHttpClient<KeycloakBotProvisioner>();
 builder.Services.AddHttpClient<DatingAppApiClient>();
+builder.Services.AddHttpClient<GeminiLlmProvider>();
+builder.Services.AddHttpClient<GroqLlmProvider>();
+builder.Services.AddHttpClient<OllamaLlmProvider>();
 builder.Services.AddHttpClient(); // IHttpClientFactory for ChaosAgent
 
 // Services
@@ -53,6 +59,38 @@ builder.Services.AddSingleton<MessageContentProvider>(sp =>
 
 builder.Services.AddScoped<KeycloakBotProvisioner>();
 builder.Services.AddScoped<DatingAppApiClient>();
+
+// ── LLM providers (Wave 0) ──
+builder.Services.AddSingleton<GeminiLlmProvider>();
+builder.Services.AddSingleton<GroqLlmProvider>();
+builder.Services.AddSingleton<OllamaLlmProvider>();
+builder.Services.AddSingleton<ILlmProvider>(sp => sp.GetRequiredService<GeminiLlmProvider>());
+builder.Services.AddSingleton<ILlmProvider>(sp => sp.GetRequiredService<GroqLlmProvider>());
+builder.Services.AddSingleton<ILlmProvider>(sp => sp.GetRequiredService<OllamaLlmProvider>());
+builder.Services.AddSingleton<LlmRouter>();
+
+// ── Conversation engines (Wave 1) ──
+builder.Services.AddSingleton<CannedConversationEngine>();
+builder.Services.AddSingleton<LlmConversationEngine>();
+builder.Services.AddSingleton<HybridConversationEngine>();
+
+// Register IConversationEngine based on config (hybrid/llm/canned)
+builder.Services.AddSingleton<IConversationEngine>(sp =>
+{
+    var config = sp.GetRequiredService<IOptions<BotServiceOptions>>().Value;
+    return config.Conversation.Engine.ToLowerInvariant() switch
+    {
+        "llm" => sp.GetRequiredService<LlmConversationEngine>(),
+        "canned" => sp.GetRequiredService<CannedConversationEngine>(),
+        _ => sp.GetRequiredService<HybridConversationEngine>() // "hybrid" or default
+    };
+});
+
+// ── Bot Observer (Wave 2) ──
+builder.Services.AddSingleton<BotService.Services.Observer.BotObserver>();
+
+// ── Swarm Orchestrator (Wave 3) ──
+builder.Services.AddSingleton<BotService.Services.Swarm.SwarmOrchestrator>();
 
 // Bot mode background services
 builder.Services.AddHostedService<SyntheticUserService>();
@@ -100,8 +138,9 @@ app.MapHealthChecks("/health");
 app.MapGet("/", () => Results.Ok(new
 {
     service = "bot-service",
-    version = "1.0.0",
+    version = "2.0.0",
     status = "running",
+    features = new[] { "llm-conversations", "hybrid-engine", "multi-provider" },
     docs = "/swagger"
 }));
 
