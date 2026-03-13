@@ -2,6 +2,7 @@ using BotService.Configuration;
 using BotService.Data;
 using BotService.Models;
 using BotService.Services.Content;
+using BotService.Services.Conversation;
 using BotService.Services.Keycloak;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Options;
@@ -12,6 +13,9 @@ namespace BotService.Services.BotModes;
 /// Core bot behavior loop: discover → swipe → match → chat.
 /// Each synthetic bot runs through this cycle on configurable intervals,
 /// simulating realistic human dating app behavior.
+///
+/// Uses IConversationEngine (hybrid/llm/canned) for message generation.
+/// Instrumented via DatingAppApiClient.SetBotContext() for observer tracking.
 ///
 /// SAFETY GUARDS:
 /// - Fetches blocked-by set each cycle → skips blocked users
@@ -26,6 +30,7 @@ public class SyntheticUserService : BackgroundService
     private readonly IOptionsMonitor<BotServiceOptions> _config;
     private readonly BotPersonaEngine _personaEngine;
     private readonly MessageContentProvider _messageProvider;
+    private readonly IConversationEngine _conversationEngine;
     private readonly Random _random = new();
 
     /// <summary>Max unanswered messages to any single user before flagging unresponsive</summary>
@@ -36,13 +41,15 @@ public class SyntheticUserService : BackgroundService
         ILogger<SyntheticUserService> logger,
         IOptionsMonitor<BotServiceOptions> config,
         BotPersonaEngine personaEngine,
-        MessageContentProvider messageProvider)
+        MessageContentProvider messageProvider,
+        IConversationEngine conversationEngine)
     {
         _serviceProvider = serviceProvider;
         _logger = logger;
         _config = config;
         _personaEngine = personaEngine;
         _messageProvider = messageProvider;
+        _conversationEngine = conversationEngine;
     }
 
     protected override async Task ExecuteAsync(CancellationToken stoppingToken)
@@ -186,6 +193,9 @@ public class SyntheticUserService : BackgroundService
             var persona = _personaEngine.GetPersonaById(bot.PersonaId);
             if (persona == null) continue;
 
+            // Set observer context so all API calls get tagged with this bot
+            apiClient.SetBotContext(bot.PersonaId, bot.KeycloakUserId ?? "unknown");
+
             // Check active hours
             var currentHour = DateTime.UtcNow.Hour;
             if (currentHour < persona.Behavior.ActiveStartHourUtc ||
@@ -235,7 +245,7 @@ public class SyntheticUserService : BackgroundService
                     await DiscoverAndSwipeAsync(bot, persona, apiClient, ct);
                 }
 
-                // Phase 2: Chat with matches (with safety guards)
+                // Phase 2: Chat with matches (with safety guards + LLM)
                 if (bot.MessagesSentToday < persona.Behavior.MaxDailyMessages)
                 {
                     await ChatWithMatchesAsync(bot, persona, apiClient, ct);
@@ -351,8 +361,34 @@ public class SyntheticUserService : BackgroundService
             return;
         }
 
-        // Get message depth based on conversation count
-        var message = _messageProvider.GetMessageForDepth(bot.ConversationCount);
+        // ─── Generate message via Conversation Engine (LLM/hybrid/canned) ─────
+        string message;
+        try
+        {
+            // Fetch recent message history for LLM context
+            var recentMessages = await apiClient.GetConversationMessagesAsync(
+                otherUserId, bot.AccessToken!, ct);
+
+            var context = new ConversationContext
+            {
+                Persona = persona,
+                BotUserId = bot.KeycloakUserId ?? "",
+                MatchedUserId = otherUserId,
+                MessageCount = bot.ConversationCount,
+                RecentMessages = recentMessages
+            };
+
+            var reply = await _conversationEngine.GenerateReplyAsync(context, ct);
+            message = reply.Message;
+
+            _logger.LogDebug("Bot {BotId}: generated {Source} message ({Provider}, {Tokens} tokens, {Latency}ms)",
+                bot.PersonaId, reply.Source, reply.Provider ?? "n/a", reply.TokensUsed, reply.LatencyMs);
+        }
+        catch (Exception ex)
+        {
+            _logger.LogWarning(ex, "Bot {BotId}: conversation engine failed, falling back to canned", bot.PersonaId);
+            message = _messageProvider.GetMessageForDepth(bot.ConversationCount);
+        }
         
         var sent = await apiClient.SendMessageAsync(otherUserId, message, bot.AccessToken!, ct);
         if (sent)

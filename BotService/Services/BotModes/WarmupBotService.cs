@@ -2,6 +2,7 @@ using BotService.Configuration;
 using BotService.Data;
 using BotService.Models;
 using BotService.Services.Content;
+using BotService.Services.Conversation;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Options;
 
@@ -13,6 +14,9 @@ namespace BotService.Services.BotModes;
 /// feeling alive even during low-traffic periods.
 /// Bots in warmup mode swipe right more aggressively and respond to
 /// messages quickly.
+///
+/// Uses IConversationEngine (hybrid/llm/canned) for message generation.
+/// Instrumented via DatingAppApiClient.SetBotContext() for observer tracking.
 ///
 /// SAFETY GUARDS (same as SyntheticUserService):
 /// - Checks blocked-by set before messaging
@@ -26,6 +30,7 @@ public class WarmupBotService : BackgroundService
     private readonly IOptionsMonitor<BotServiceOptions> _config;
     private readonly BotPersonaEngine _personaEngine;
     private readonly MessageContentProvider _messageProvider;
+    private readonly IConversationEngine _conversationEngine;
     private readonly DatingAppApiClient _apiClient;
 
     private const int MaxUnansweredMessages = 5;
@@ -36,6 +41,7 @@ public class WarmupBotService : BackgroundService
         IOptionsMonitor<BotServiceOptions> config,
         BotPersonaEngine personaEngine,
         MessageContentProvider messageProvider,
+        IConversationEngine conversationEngine,
         DatingAppApiClient apiClient)
     {
         _serviceProvider = serviceProvider;
@@ -43,6 +49,7 @@ public class WarmupBotService : BackgroundService
         _config = config;
         _personaEngine = personaEngine;
         _messageProvider = messageProvider;
+        _conversationEngine = conversationEngine;
         _apiClient = apiClient;
     }
 
@@ -107,6 +114,9 @@ public class WarmupBotService : BackgroundService
                 var personas = _personaEngine.Personas;
                 var persona = personas.FirstOrDefault(p => p.Id == bot.PersonaId);
                 if (persona == null || !persona.Modes.Contains("warmup")) continue;
+
+                // Set observer context for this bot
+                _apiClient.SetBotContext(bot.PersonaId, bot.KeycloakUserId ?? "unknown");
 
                 // Refresh blocked-by set
                 if (bot.AccessToken != null)
@@ -206,7 +216,34 @@ public class WarmupBotService : BackgroundService
                     continue;
                 }
 
-                var message = _messageProvider.GetMessageForDepth(bot.MessagesSentToday);
+                // ─── Generate message via Conversation Engine (LLM/hybrid/canned) ─────
+                string message;
+                try
+                {
+                    var recentMessages = await _apiClient.GetConversationMessagesAsync(
+                        senderId, bot.AccessToken, ct);
+
+                    var context = new ConversationContext
+                    {
+                        Persona = persona,
+                        BotUserId = bot.KeycloakUserId ?? "",
+                        MatchedUserId = senderId,
+                        MessageCount = bot.ConversationCount,
+                        RecentMessages = recentMessages
+                    };
+
+                    var reply = await _conversationEngine.GenerateReplyAsync(context, ct);
+                    message = reply.Message;
+
+                    _logger.LogDebug("🌡️ Warmup bot {BotId}: {Source} reply ({Provider}, {Tokens}tok, {Latency}ms)",
+                        bot.PersonaId, reply.Source, reply.Provider ?? "n/a", reply.TokensUsed, reply.LatencyMs);
+                }
+                catch (Exception ex)
+                {
+                    _logger.LogWarning(ex, "🌡️ Warmup bot {BotId}: LLM failed, canned fallback", bot.PersonaId);
+                    message = _messageProvider.GetMessageForDepth(bot.MessagesSentToday);
+                }
+
                 await _apiClient.SendMessageAsync(senderId, message, bot.AccessToken, ct);
                 bot.MessagesSentToday++;
                 bot.ConversationCount++;
