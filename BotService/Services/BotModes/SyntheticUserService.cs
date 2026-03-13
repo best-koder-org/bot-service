@@ -12,6 +12,12 @@ namespace BotService.Services.BotModes;
 /// Core bot behavior loop: discover → swipe → match → chat.
 /// Each synthetic bot runs through this cycle on configurable intervals,
 /// simulating realistic human dating app behavior.
+///
+/// SAFETY GUARDS:
+/// - Fetches blocked-by set each cycle → skips blocked users
+/// - Tracks per-user message counts → max 5 unanswered messages
+/// - Marks unresponsive users → backs off for 48h
+/// - Bots never see other bots in discover (ExcludeBotFilter in MatchmakingService)
 /// </summary>
 public class SyntheticUserService : BackgroundService
 {
@@ -21,6 +27,9 @@ public class SyntheticUserService : BackgroundService
     private readonly BotPersonaEngine _personaEngine;
     private readonly MessageContentProvider _messageProvider;
     private readonly Random _random = new();
+
+    /// <summary>Max unanswered messages to any single user before flagging unresponsive</summary>
+    private const int MaxUnansweredMessages = 5;
 
     public SyntheticUserService(
         IServiceProvider serviceProvider,
@@ -214,13 +223,19 @@ public class SyntheticUserService : BackgroundService
 
             try
             {
+                // ─── Safety: refresh blocked-by set each cycle ─────
+                var blockedIds = await apiClient.GetBlockedByIdsAsync(bot.AccessToken, ct);
+                bot.SetBlockedByIds(blockedIds);
+                if (blockedIds.Count > 0)
+                    _logger.LogDebug("Bot {Id}: blocked by {Count} users", bot.PersonaId, blockedIds.Count);
+
                 // Phase 1: Discover & Swipe
                 if (bot.SwipesToday < persona.Behavior.MaxDailySwipes)
                 {
                     await DiscoverAndSwipeAsync(bot, persona, apiClient, ct);
                 }
 
-                // Phase 2: Chat with matches
+                // Phase 2: Chat with matches (with safety guards)
                 if (bot.MessagesSentToday < persona.Behavior.MaxDailyMessages)
                 {
                     await ChatWithMatchesAsync(bot, persona, apiClient, ct);
@@ -310,6 +325,32 @@ public class SyntheticUserService : BackgroundService
 
         if (string.IsNullOrEmpty(otherUserId)) return;
 
+        // ─── Safety guard: skip if user blocked us ─────────────
+        if (bot.IsBlockedBy(otherUserId))
+        {
+            _logger.LogDebug("Bot {BotId}: skipping {Target} — user has blocked us",
+                bot.PersonaId, otherUserId);
+            return;
+        }
+
+        // ─── Conversation guard: skip unresponsive users ───────
+        if (bot.IsUnresponsive(otherUserId))
+        {
+            _logger.LogDebug("Bot {BotId}: skipping {Target} — marked unresponsive (48h cooldown)",
+                bot.PersonaId, otherUserId);
+            return;
+        }
+
+        // ─── Conversation guard: cap per-user messages ─────────
+        var sentCount = bot.GetMessageCountForUser(otherUserId);
+        if (sentCount >= MaxUnansweredMessages)
+        {
+            bot.MarkUnresponsive(otherUserId);
+            _logger.LogInformation("Bot {BotId}: marking {Target} unresponsive after {Count} unanswered messages",
+                bot.PersonaId, otherUserId, sentCount);
+            return;
+        }
+
         // Get message depth based on conversation count
         var message = _messageProvider.GetMessageForDepth(bot.ConversationCount);
         
@@ -318,8 +359,10 @@ public class SyntheticUserService : BackgroundService
         {
             bot.MessagesSentToday++;
             bot.ConversationCount++;
-            _logger.LogInformation("Bot {BotId}: sent message to {Target}: \"{Msg}\"",
-                bot.PersonaId, otherUserId, message[..Math.Min(40, message.Length)]);
+            bot.IncrementMessageCount(otherUserId);
+            _logger.LogInformation("Bot {BotId}: sent message to {Target}: \"{Msg}\" (#{Count} to this user)",
+                bot.PersonaId, otherUserId, message[..Math.Min(40, message.Length)],
+                bot.GetMessageCountForUser(otherUserId));
         }
     }
 }

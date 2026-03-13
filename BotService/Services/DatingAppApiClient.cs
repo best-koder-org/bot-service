@@ -62,7 +62,8 @@ public class DatingAppApiClient
             drinkingStatus = persona.DrinkingStatus,
             relationshipType = persona.RelationshipType,
             wantsChildren = false,
-            hasChildren = false
+            hasChildren = false,
+            isBot = true   // ← tell UserService this is a bot
         };
         
         var response = await PostAsync($"{_endpoints.UserService}/api/UserProfiles", payload, token, ct);
@@ -171,6 +172,54 @@ public class DatingAppApiClient
             return result.Value.EnumerateArray().ToArray();
         
         return Array.Empty<JsonElement>();
+    }
+
+    // ─── Safety (block/report awareness) ────────────────────────
+
+    /// <summary>Check if a specific user has blocked us via GET /api/safety/block/{userId}</summary>
+    public async Task<bool> IsBlockedByUserAsync(
+        string targetKeycloakId, string token, CancellationToken ct)
+    {
+        try
+        {
+            var result = await GetAsync(
+                $"{_endpoints.SafetyService}/api/safety/block/{targetKeycloakId}", token, ct);
+            if (result == null) return false;
+            if (result.Value.ValueKind == JsonValueKind.Object &&
+                result.Value.TryGetProperty("isBlocked", out var blocked))
+                return blocked.GetBoolean();
+            return true;
+        }
+        catch
+        {
+            return false; // Fail safe: assume not blocked if we can't check
+        }
+    }
+
+    /// <summary>Get set of user IDs who have blocked this bot</summary>
+    public async Task<HashSet<string>> GetBlockedByIdsAsync(string token, CancellationToken ct)
+    {
+        try
+        {
+            var result = await GetAsync(
+                $"{_endpoints.SafetyService}/api/safety/block", token, ct);
+            if (result == null) return new HashSet<string>();
+
+            var ids = new HashSet<string>();
+            if (result.Value.ValueKind == JsonValueKind.Array)
+            {
+                foreach (var item in result.Value.EnumerateArray())
+                {
+                    if (item.TryGetProperty("blockedUserId", out var idProp))
+                        ids.Add(idProp.GetString() ?? "");
+                }
+            }
+            return ids;
+        }
+        catch
+        {
+            return new HashSet<string>();
+        }
     }
 
     // ─── Helpers ────────────────────────────────────────────────

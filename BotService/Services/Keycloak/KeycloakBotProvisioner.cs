@@ -12,6 +12,11 @@ namespace BotService.Services.Keycloak;
 /// <summary>
 /// Manages Keycloak user lifecycle for bots: create users, get tokens, refresh tokens.
 /// Follows the exact same auth flow as api_tests.py and the Flutter app.
+///
+/// CREDENTIAL SECURITY:
+/// - Bot password prefix can be overridden via BOT_PASSWORD_PREFIX env var
+/// - Admin credentials can be overridden via BOT_KEYCLOAK_ADMIN_USER / BOT_KEYCLOAK_ADMIN_PASSWORD
+/// - Environment vars take precedence over appsettings.json
 /// </summary>
 public class KeycloakBotProvisioner
 {
@@ -37,6 +42,19 @@ public class KeycloakBotProvisioner
         _config = options.Value.Keycloak;
     }
 
+    // ─── Credential helpers (env var overrides) ─────────────────
+
+    private string GetBotPasswordPrefix() =>
+        Environment.GetEnvironmentVariable("BOT_PASSWORD_PREFIX") ?? _config.BotPasswordPrefix;
+    
+    private string GetAdminUser() =>
+        Environment.GetEnvironmentVariable("BOT_KEYCLOAK_ADMIN_USER") ?? _config.AdminUser;
+    
+    private string GetAdminPassword() =>
+        Environment.GetEnvironmentVariable("BOT_KEYCLOAK_ADMIN_PASSWORD") ?? _config.AdminPassword;
+
+    // ─── Public API ─────────────────────────────────────────────
+
     /// <summary>
     /// Ensure a Keycloak user exists for the bot persona. Returns the Keycloak user ID.
     /// Creates the user if it doesn't exist, reuses if it does.
@@ -46,7 +64,7 @@ public class KeycloakBotProvisioner
         var adminToken = await GetAdminTokenAsync(ct);
         var username = $"bot_{persona.Id}";
         var email = $"bot_{persona.Id}@bot.local";
-        var password = $"{_config.BotPasswordPrefix}{persona.Id}";
+        var password = $"{GetBotPasswordPrefix()}{persona.Id}";
         
         // Check if user already exists
         var existingId = await FindUserIdAsync(username, adminToken, ct);
@@ -113,7 +131,7 @@ public class KeycloakBotProvisioner
         BotPersona persona, CancellationToken ct = default)
     {
         var username = $"bot_{persona.Id}";
-        var password = $"{_config.BotPasswordPrefix}{persona.Id}";
+        var password = $"{GetBotPasswordPrefix()}{persona.Id}";
         
         var tokenUrl = $"{_config.BaseUrl}/realms/{_config.Realm}/protocol/openid-connect/token";
         var payload = new FormUrlEncodedContent(new Dictionary<string, string>
@@ -165,6 +183,8 @@ public class KeycloakBotProvisioner
         return (newAccessToken, newRefreshToken, expiresAt);
     }
 
+    // ─── Private helpers ────────────────────────────────────────
+
     private async Task<string> GetAdminTokenAsync(CancellationToken ct)
     {
         if (_adminToken != null && DateTime.UtcNow < _adminTokenExpiry)
@@ -175,8 +195,8 @@ public class KeycloakBotProvisioner
         {
             ["grant_type"] = "password",
             ["client_id"] = "admin-cli",
-            ["username"] = _config.AdminUser,
-            ["password"] = _config.AdminPassword
+            ["username"] = GetAdminUser(),
+            ["password"] = GetAdminPassword()
         });
         
         var response = await _http.PostAsync(tokenUrl, payload, ct);

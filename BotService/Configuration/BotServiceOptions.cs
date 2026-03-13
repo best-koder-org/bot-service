@@ -41,6 +41,7 @@ public class ServiceEndpoints
     public string MessagingService { get; set; } = "http://localhost:8086";
     public string PhotoService { get; set; } = "http://localhost:8085";
     public string MessagingHub { get; set; } = "http://localhost:8086/messagingHub";
+    public string SafetyService { get; set; } = "http://localhost:8088";
 }
 
 public class BotModeOptions

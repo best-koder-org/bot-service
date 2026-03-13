@@ -13,6 +13,11 @@ namespace BotService.Services.BotModes;
 /// feeling alive even during low-traffic periods.
 /// Bots in warmup mode swipe right more aggressively and respond to
 /// messages quickly.
+///
+/// SAFETY GUARDS (same as SyntheticUserService):
+/// - Checks blocked-by set before messaging
+/// - Respects per-user message caps
+/// - Skips unresponsive users (48h cooldown)
 /// </summary>
 public class WarmupBotService : BackgroundService
 {
@@ -22,6 +27,8 @@ public class WarmupBotService : BackgroundService
     private readonly BotPersonaEngine _personaEngine;
     private readonly MessageContentProvider _messageProvider;
     private readonly DatingAppApiClient _apiClient;
+
+    private const int MaxUnansweredMessages = 5;
 
     public WarmupBotService(
         IServiceProvider serviceProvider,
@@ -101,6 +108,13 @@ public class WarmupBotService : BackgroundService
                 var persona = personas.FirstOrDefault(p => p.Id == bot.PersonaId);
                 if (persona == null || !persona.Modes.Contains("warmup")) continue;
 
+                // Refresh blocked-by set
+                if (bot.AccessToken != null)
+                {
+                    var blockedIds = await _apiClient.GetBlockedByIdsAsync(bot.AccessToken, ct);
+                    bot.SetBlockedByIds(blockedIds);
+                }
+
                 // Warmup bots always swipe right and respond immediately
                 await WarmupSwipeAsync(bot, persona, ct);
                 await WarmupRespondAsync(bot, persona, ct);
@@ -166,10 +180,37 @@ public class WarmupBotService : BackgroundService
                 var senderId = senderProp.GetString();
                 if (senderId == bot.KeycloakUserId) continue; // We sent the last message
 
+                if (string.IsNullOrEmpty(senderId)) continue;
+
+                // ─── Safety guard: skip if user blocked us ─────────
+                if (bot.IsBlockedBy(senderId))
+                {
+                    _logger.LogDebug("🌡️ Warmup bot {BotId}: skipping {User} — blocked",
+                        bot.PersonaId, senderId);
+                    continue;
+                }
+
+                // ─── Conversation guard: skip unresponsive users ───
+                if (bot.IsUnresponsive(senderId))
+                {
+                    _logger.LogDebug("🌡️ Warmup bot {BotId}: skipping {User} — unresponsive",
+                        bot.PersonaId, senderId);
+                    continue;
+                }
+
+                // ─── Conversation guard: cap per-user messages ─────
+                var sentCount = bot.GetMessageCountForUser(senderId);
+                if (sentCount >= MaxUnansweredMessages)
+                {
+                    bot.MarkUnresponsive(senderId);
+                    continue;
+                }
+
                 var message = _messageProvider.GetMessageForDepth(bot.MessagesSentToday);
-                await _apiClient.SendMessageAsync(senderId!, message, bot.AccessToken, ct);
+                await _apiClient.SendMessageAsync(senderId, message, bot.AccessToken, ct);
                 bot.MessagesSentToday++;
                 bot.ConversationCount++;
+                bot.IncrementMessageCount(senderId);
 
                 _logger.LogDebug("🌡️ Warmup bot {BotId} responded to {User}", bot.PersonaId, senderId);
                 
