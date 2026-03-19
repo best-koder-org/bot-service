@@ -1,0 +1,32 @@
+{
+  "id": "demo-user",
+  "firstName": "Alex",
+  "lastName": "Devsson",
+  "age": 29,
+  "gender": "male",
+  "preferredGender": "female",
+  "bio": "Dev mode test user. Loves coding, coffee, and long walks through log files 🖥️☕",
+  "city": "Stockholm",
+  "latitude": 59.3293,
+  "longitude": 18.0686,
+  "occupation": "Software Developer",
+  "education": "KTH Royal Institute of Technology",
+  "interests": ["programming", "gaming", "coffee", "music", "hiking"],
+  "languages": ["Svenska", "English"],
+  "smokingStatus": "Never",
+  "drinkingStatus": "Socially",
+  "relationshipType": "Long-term relationship",
+  "height": 182,
+  "modes": ["demo"],
+  "behavior": {
+    "swipeRightProbability": 0,
+    "avgActionDelaySec": 0,
+    "minResponseDelaySec": 0,
+    "maxResponseDelaySec": 0,
+    "chattiness": "low",
+    "activeStartHourUtc": 0,
+    "activeEndHourUtc": 23,
+    "maxDailySwipes": 0,
+    "maxDailyMessages": 0
+  }
+}

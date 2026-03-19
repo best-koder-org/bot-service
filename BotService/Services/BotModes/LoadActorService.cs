@@ -18,20 +18,17 @@ public class LoadActorService : BackgroundService
     private readonly ILogger<LoadActorService> _logger;
     private readonly IOptionsMonitor<BotServiceOptions> _config;
     private readonly BotPersonaEngine _personaEngine;
-    private readonly DatingAppApiClient _apiClient;
 
     public LoadActorService(
         IServiceProvider serviceProvider,
         ILogger<LoadActorService> logger,
         IOptionsMonitor<BotServiceOptions> config,
-        BotPersonaEngine personaEngine,
-        DatingAppApiClient apiClient)
+        BotPersonaEngine personaEngine)
     {
         _serviceProvider = serviceProvider;
         _logger = logger;
         _config = config;
         _personaEngine = personaEngine;
-        _apiClient = apiClient;
     }
 
     protected override async Task ExecuteAsync(CancellationToken stoppingToken)
@@ -72,6 +69,7 @@ public class LoadActorService : BackgroundService
     {
         using var scope = _serviceProvider.CreateScope();
         var db = scope.ServiceProvider.GetRequiredService<BotDbContext>();
+        var apiClient = scope.ServiceProvider.GetRequiredService<DatingAppApiClient>();
         var loadOpts = _config.CurrentValue.Modes.Load;
 
         var activeBots = await db.BotStates
@@ -108,7 +106,7 @@ public class LoadActorService : BackgroundService
             {
                 try
                 {
-                    var result = await ExecuteRandomAction(bot, ct);
+                    var result = await ExecuteRandomAction(bot, apiClient, ct);
                     Interlocked.Increment(ref totalRequests);
                     
                     if (result == LoadResult.Success) Interlocked.Increment(ref successCount);
@@ -135,7 +133,7 @@ public class LoadActorService : BackgroundService
             totalRequests, elapsed, actualRps, successCount, errorCount, rateLimitedCount);
     }
 
-    private async Task<LoadResult> ExecuteRandomAction(BotState bot, CancellationToken ct)
+    private async Task<LoadResult> ExecuteRandomAction(BotState bot, DatingAppApiClient apiClient, CancellationToken ct)
     {
         if (bot.AccessToken == null) return LoadResult.Error;
 
@@ -146,17 +144,17 @@ public class LoadActorService : BackgroundService
             switch (action)
             {
                 case 0: // Get profile
-                    var profile = await _apiClient.GetMyProfileAsync(bot.AccessToken, ct);
+                    var profile = await apiClient.GetMyProfileAsync(bot.AccessToken, ct);
                     return profile != null ? LoadResult.Success : LoadResult.Error;
 
                 case 1: // Get candidates
                     if (bot.ProfileId == null) return LoadResult.Error;
-                    var candidates = await _apiClient.GetCandidatesAsync(bot.ProfileId.Value, bot.AccessToken, ct);
+                    var candidates = await apiClient.GetCandidatesAsync(bot.ProfileId.Value, bot.AccessToken, ct);
                     return candidates != null ? LoadResult.Success : LoadResult.Error;
 
                 case 2: // Swipe
                     if (bot.ProfileId == null) return LoadResult.Error;
-                    var swipeResult = await _apiClient.SwipeAsync(
+                    var swipeResult = await apiClient.SwipeAsync(
                         bot.ProfileId.Value, 
                         Random.Shared.Next(1, 1000),
                         Random.Shared.NextDouble() > 0.5, 
@@ -166,7 +164,7 @@ public class LoadActorService : BackgroundService
                     return LoadResult.Success;
 
                 case 3: // Get conversations
-                    var convos = await _apiClient.GetConversationsAsync(bot.AccessToken, ct);
+                    var convos = await apiClient.GetConversationsAsync(bot.AccessToken, ct);
                     return LoadResult.Success;
 
                 default:

@@ -31,7 +31,6 @@ public class WarmupBotService : BackgroundService
     private readonly BotPersonaEngine _personaEngine;
     private readonly MessageContentProvider _messageProvider;
     private readonly IConversationEngine _conversationEngine;
-    private readonly DatingAppApiClient _apiClient;
 
     private const int MaxUnansweredMessages = 5;
 
@@ -41,8 +40,7 @@ public class WarmupBotService : BackgroundService
         IOptionsMonitor<BotServiceOptions> config,
         BotPersonaEngine personaEngine,
         MessageContentProvider messageProvider,
-        IConversationEngine conversationEngine,
-        DatingAppApiClient apiClient)
+        IConversationEngine conversationEngine)
     {
         _serviceProvider = serviceProvider;
         _logger = logger;
@@ -50,7 +48,6 @@ public class WarmupBotService : BackgroundService
         _personaEngine = personaEngine;
         _messageProvider = messageProvider;
         _conversationEngine = conversationEngine;
-        _apiClient = apiClient;
     }
 
     protected override async Task ExecuteAsync(CancellationToken stoppingToken)
@@ -103,6 +100,9 @@ public class WarmupBotService : BackgroundService
             return;
         }
 
+
+        var apiClient = scope.ServiceProvider.GetRequiredService<DatingAppApiClient>();
+
         _logger.LogInformation("🌡️ Warmup cycle: {Count} active bots", activeBots.Count);
 
         foreach (var bot in activeBots)
@@ -116,18 +116,18 @@ public class WarmupBotService : BackgroundService
                 if (persona == null || !persona.Modes.Contains("warmup")) continue;
 
                 // Set observer context for this bot
-                _apiClient.SetBotContext(bot.PersonaId, bot.KeycloakUserId ?? "unknown");
+                apiClient.SetBotContext(bot.PersonaId, bot.KeycloakUserId ?? "unknown");
 
                 // Refresh blocked-by set
                 if (bot.AccessToken != null)
                 {
-                    var blockedIds = await _apiClient.GetBlockedByIdsAsync(bot.AccessToken, ct);
+                    var blockedIds = await apiClient.GetBlockedByIdsAsync(bot.AccessToken, ct);
                     bot.SetBlockedByIds(blockedIds);
                 }
 
                 // Warmup bots always swipe right and respond immediately
-                await WarmupSwipeAsync(bot, persona, ct);
-                await WarmupRespondAsync(bot, persona, ct);
+                await WarmupSwipeAsync(bot, persona, apiClient, ct);
+                await WarmupRespondAsync(bot, persona, apiClient, ct);
                 
                 bot.LastAction = "warmup-cycle";
                 bot.LastActionAt = DateTime.UtcNow;
@@ -140,14 +140,14 @@ public class WarmupBotService : BackgroundService
         }
     }
 
-    private async Task WarmupSwipeAsync(BotState bot, BotPersona persona, CancellationToken ct)
+    private async Task WarmupSwipeAsync(BotState bot, BotPersona persona, DatingAppApiClient apiClient, CancellationToken ct)
     {
         if (bot.AccessToken == null || bot.ProfileId == null) return;
         bot.ResetDailyCountersIfNeeded();
 
         if (bot.SwipesToday >= (persona.Behavior?.MaxDailySwipes ?? 50)) return;
 
-        var candidates = await _apiClient.GetCandidatesAsync(bot.ProfileId.Value, bot.AccessToken, ct);
+        var candidates = await apiClient.GetCandidatesAsync(bot.ProfileId.Value, bot.AccessToken, ct);
         if (candidates.Length == 0) return;
 
         // Warmup bots swipe right on everyone (making sure new users get matches)
@@ -158,7 +158,7 @@ public class WarmupBotService : BackgroundService
             
             // Warmup = 90% right swipe
             var isLike = Random.Shared.NextDouble() < 0.9;
-            var result = await _apiClient.SwipeAsync(bot.ProfileId.Value, targetId, isLike, bot.AccessToken, ct);
+            var result = await apiClient.SwipeAsync(bot.ProfileId.Value, targetId, isLike, bot.AccessToken, ct);
 
             bot.SwipesToday++;
 
@@ -172,12 +172,12 @@ public class WarmupBotService : BackgroundService
         }
     }
 
-    private async Task WarmupRespondAsync(BotState bot, BotPersona persona, CancellationToken ct)
+    private async Task WarmupRespondAsync(BotState bot, BotPersona persona, DatingAppApiClient apiClient, CancellationToken ct)
     {
         if (bot.AccessToken == null) return;
 
         // Get conversations and respond to any unread messages quickly
-        var conversations = await _apiClient.GetConversationsAsync(bot.AccessToken, ct);
+        var conversations = await apiClient.GetConversationsAsync(bot.AccessToken, ct);
         if (conversations.Length == 0) return;
 
         foreach (var conv in conversations.Take(5))
@@ -220,7 +220,7 @@ public class WarmupBotService : BackgroundService
                 string message;
                 try
                 {
-                    var recentMessages = await _apiClient.GetConversationMessagesAsync(
+                    var recentMessages = await apiClient.GetConversationMessagesAsync(
                         senderId, bot.AccessToken, ct);
 
                     var context = new ConversationContext
@@ -244,7 +244,7 @@ public class WarmupBotService : BackgroundService
                     message = _messageProvider.GetMessageForDepth(bot.MessagesSentToday);
                 }
 
-                await _apiClient.SendMessageAsync(senderId, message, bot.AccessToken, ct);
+                await apiClient.SendMessageAsync(senderId, message, bot.AccessToken, ct);
                 bot.MessagesSentToday++;
                 bot.ConversationCount++;
                 bot.IncrementMessageCount(senderId);
