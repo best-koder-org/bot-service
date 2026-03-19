@@ -1,3 +1,4 @@
+using System.Text.Json;
 using BotService.Configuration;
 using BotService.Data;
 using BotService.Models;
@@ -93,12 +94,28 @@ public class SyntheticUserService : BackgroundService
 
     private async Task ProvisionBotsAsync(CancellationToken ct)
     {
-        var personas = _personaEngine.GetPersonasForMode("synthetic");
-        if (personas.Count == 0)
+        // 1. Provision demo-user first (dev sign-in)
+        var demoPersonas = _personaEngine.GetPersonasForMode("demo");
+        await ProvisionPersonasAsync(demoPersonas, ct);
+
+        // 2. Provision all synthetic bots
+        var syntheticPersonas = _personaEngine.GetPersonasForMode("synthetic");
+        await ProvisionPersonasAsync(syntheticPersonas, ct);
+
+        // 3. Pre-seed mutual likes so demo-user has matches immediately
+        await PreSeedMutualLikesAsync(ct);
+
+        if (syntheticPersonas.Count == 0)
         {
-            _logger.LogWarning("No synthetic personas loaded");
-            return;
+            _logger.LogWarning("No synthetic personas loaded — only demo-user provisioned");
         }
+    }
+
+
+    /// <summary>Provision a set of personas: create Keycloak user, profile, upload photo.</summary>
+    private async Task ProvisionPersonasAsync(List<BotPersona> personas, CancellationToken ct)
+    {
+        if (personas.Count == 0) return;
 
         using var scope = _serviceProvider.CreateScope();
         var keycloak = scope.ServiceProvider.GetRequiredService<KeycloakBotProvisioner>();
@@ -109,43 +126,35 @@ public class SyntheticUserService : BackgroundService
         {
             try
             {
-                // Check if already provisioned
                 var existingState = await db.BotStates
                     .FirstOrDefaultAsync(b => b.PersonaId == persona.Id, ct);
 
                 if (existingState is { Status: BotStatus.Active })
                 {
-                    // Already active — but check if photo still needs uploading
                     if (!existingState.PhotoUploaded)
                     {
                         var (tok, _, _) = await keycloak.GetBotTokenAsync(persona, ct);
                         await UploadBotPhotoAsync(persona, apiClient, tok, existingState, db, ct);
                     }
-                    _logger.LogDebug("Bot {Id} already active, skipping provision", persona.Id);
+                    _logger.LogDebug("Persona {Id} already active, skipping provision", persona.Id);
                     continue;
                 }
 
-                // Create/find Keycloak user
                 var keycloakId = await keycloak.EnsureBotUserAsync(persona, ct);
-                
-                // Get token
                 var (accessToken, refreshToken, expiresAt) = await keycloak.GetBotTokenAsync(persona, ct);
-                
-                // Create profile if needed
+
                 int? profileId = existingState?.ProfileId;
                 if (profileId == null)
                 {
                     profileId = await apiClient.CreateProfileAsync(persona, accessToken, ct);
                     if (profileId == null)
                     {
-                        // Profile might already exist (409)
                         var profile = await apiClient.GetMyProfileAsync(accessToken, ct);
                         if (profile != null && profile.Value.TryGetProperty("id", out var idEl))
                             profileId = idEl.GetInt32();
                     }
                 }
 
-                // Upsert bot state
                 if (existingState != null)
                 {
                     existingState.KeycloakUserId = keycloakId;
@@ -171,10 +180,9 @@ public class SyntheticUserService : BackgroundService
                 }
 
                 await db.SaveChangesAsync(ct);
-                _logger.LogInformation("Provisioned synthetic bot: {Id} (profile={ProfileId})",
+                _logger.LogInformation("Provisioned persona: {Id} (profile={ProfileId})",
                     persona.Id, profileId);
 
-                // Upload profile photo if not yet done
                 var state = existingState ?? await db.BotStates
                     .FirstOrDefaultAsync(b => b.PersonaId == persona.Id, ct);
                 if (state != null && !state.PhotoUploaded)
@@ -184,11 +192,95 @@ public class SyntheticUserService : BackgroundService
             }
             catch (Exception ex)
             {
-                _logger.LogError(ex, "Failed to provision bot {Id}", persona.Id);
+                _logger.LogError(ex, "Failed to provision persona {Id}", persona.Id);
             }
         }
     }
 
+    /// <summary>
+    /// Pre-seed mutual likes so demo-user has matches immediately on first sign-in.
+    /// 3-4 female bots swipe right on demo-user, then demo-user swipes right on them → instant matches.
+    /// </summary>
+    private async Task PreSeedMutualLikesAsync(CancellationToken ct)
+    {
+        using var scope = _serviceProvider.CreateScope();
+        var db = scope.ServiceProvider.GetRequiredService<BotDbContext>();
+        var apiClient = scope.ServiceProvider.GetRequiredService<DatingAppApiClient>();
+        var keycloak = scope.ServiceProvider.GetRequiredService<KeycloakBotProvisioner>();
+
+        var demoState = await db.BotStates.FirstOrDefaultAsync(b => b.PersonaId == "demo-user", ct);
+        if (demoState?.ProfileId == null)
+        {
+            _logger.LogWarning("demo-user not provisioned, skipping pre-seed");
+            return;
+        }
+
+        // Pick female bots to create mutual matches with
+        var femaleBotIds = new[] { "astrid", "linnea", "maja", "elsa" };
+        var matchCount = 0;
+
+        foreach (var botId in femaleBotIds)
+        {
+            var botState = await db.BotStates.FirstOrDefaultAsync(b => b.PersonaId == botId, ct);
+            if (botState?.ProfileId == null || botState.AccessToken == null) continue;
+
+            var persona = _personaEngine.GetPersonaById(botId);
+            if (persona == null) continue;
+
+            try
+            {
+                // Refresh bot token if expired
+                if (botState.TokenExpiresAt <= DateTime.UtcNow)
+                {
+                    var (access, refresh, expiry) = await keycloak.GetBotTokenAsync(persona, ct);
+                    botState.AccessToken = access;
+                    botState.RefreshToken = refresh;
+                    botState.TokenExpiresAt = expiry;
+                    await db.SaveChangesAsync(ct);
+                }
+
+                // Bot swipes right on demo-user
+                var (s1, _) = await apiClient.SwipeAsync(
+                    botState.ProfileId.Value, demoState.ProfileId.Value, true, botState.AccessToken, ct);
+
+                if (!s1)
+                {
+                    _logger.LogWarning("Pre-seed: {Bot} failed to swipe on demo-user", botId);
+                    continue;
+                }
+
+                // Refresh demo-user token if expired
+                var demoPersona = _personaEngine.GetPersonaById("demo-user");
+                if (demoState.TokenExpiresAt <= DateTime.UtcNow && demoPersona != null)
+                {
+                    var (access, refresh, expiry) = await keycloak.GetBotTokenAsync(demoPersona, ct);
+                    demoState.AccessToken = access;
+                    demoState.RefreshToken = refresh;
+                    demoState.TokenExpiresAt = expiry;
+                    await db.SaveChangesAsync(ct);
+                }
+
+                // Demo-user swipes right on bot → mutual match!
+                if (demoState.AccessToken != null)
+                {
+                    var (s2, isMutual) = await apiClient.SwipeAsync(
+                        demoState.ProfileId.Value, botState.ProfileId.Value, true, demoState.AccessToken, ct);
+
+                    if (s2 && isMutual)
+                    {
+                        matchCount++;
+                        _logger.LogInformation("💕 Pre-seeded mutual match: demo-user ↔ {Bot}", botId);
+                    }
+                }
+            }
+            catch (Exception ex)
+            {
+                _logger.LogWarning(ex, "Pre-seed failed for {Bot}", botId);
+            }
+        }
+
+        _logger.LogInformation("Pre-seed complete: {Count} mutual matches for demo-user", matchCount);
+    }
 
     /// <summary>Upload a persona photo to photo-service (only once per bot)</summary>
     private async Task UploadBotPhotoAsync(
@@ -311,7 +403,7 @@ public class SyntheticUserService : BackgroundService
             await db.SaveChangesAsync(ct);
 
             // Random delay between bots to spread load
-            await Task.Delay(TimeSpan.FromSeconds(_random.Next(2, 8)), ct);
+            await Task.Delay(TimeSpan.FromMilliseconds(_random.Next(200, 500)), ct); // fast reply mode
         }
     }
 
@@ -373,11 +465,28 @@ public class SyntheticUserService : BackgroundService
         var match = matches[_random.Next(matches.Length)];
         
         // Try to get the other user's Keycloak ID
-        var otherUserId = match.TryGetProperty("keycloakUserId", out var kcIdProp)
-            ? kcIdProp.GetString()
-            : match.TryGetProperty("matchedUserId", out var muProp)
-                ? muProp.GetString()
-                : null;
+        string? otherUserId = null;
+        
+        // First: check if match response already has a keycloak UUID
+        if (match.TryGetProperty("keycloakUserId", out var kcIdProp))
+            otherUserId = kcIdProp.GetString();
+        
+        // Second: resolve matchedUserId (integer profile ID) → Keycloak UUID via UserService
+        if (string.IsNullOrEmpty(otherUserId) && match.TryGetProperty("matchedUserId", out var muProp))
+        {
+            int matchedProfileId = muProp.ValueKind == JsonValueKind.Number
+                ? muProp.GetInt32()
+                : int.TryParse(muProp.GetString(), out var parsed) ? parsed : 0;
+            
+            if (matchedProfileId > 0)
+            {
+                otherUserId = await apiClient.GetKeycloakIdForProfileAsync(
+                    matchedProfileId, bot.AccessToken!, ct);
+                if (string.IsNullOrEmpty(otherUserId))
+                    _logger.LogWarning("Bot {BotId}: could not resolve keycloakId for profile {ProfileId}",
+                        bot.PersonaId, matchedProfileId);
+            }
+        }
 
         if (string.IsNullOrEmpty(otherUserId)) return;
 
@@ -414,6 +523,19 @@ public class SyntheticUserService : BackgroundService
             // Fetch recent message history for LLM context
             var recentMessages = await apiClient.GetConversationMessagesAsync(
                 otherUserId, bot.AccessToken!, ct);
+
+            // ─── Turn-taking: only reply if user sent the last message ─────
+            // If conversation exists and bot sent the last message, wait for user reply
+            if (recentMessages.Count > 0)
+            {
+                var lastMsg = recentMessages[0]; // newest message (API returns newest-first)
+                if (lastMsg.SenderUserId == (bot.KeycloakUserId ?? ""))
+                {
+                    _logger.LogDebug("Bot {BotId}: waiting for {Target} to reply (last msg was ours)",
+                        bot.PersonaId, otherUserId);
+                    return;
+                }
+            }
 
             var context = new ConversationContext
             {

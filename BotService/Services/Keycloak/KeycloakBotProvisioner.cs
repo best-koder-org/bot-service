@@ -122,6 +122,9 @@ public class KeycloakBotProvisioner
         // Set password
         await SetPasswordAsync(userId, password, adminToken, ct);
         
+        // Remove VERIFY_EMAIL required action so bots can log in immediately
+        await RemoveRequiredActionsAsync(userId, adminToken, ct);
+        
         _logger.LogInformation("Created Keycloak bot user {Username} ({Id})", username, userId);
         return userId;
     }
@@ -130,7 +133,8 @@ public class KeycloakBotProvisioner
     public async Task<(string AccessToken, string RefreshToken, DateTime ExpiresAt)> GetBotTokenAsync(
         BotPersona persona, CancellationToken ct = default)
     {
-        var username = $"bot_{persona.Id}";
+        // Keycloak realm has registrationEmailAsUsername=true, so login with email
+        var username = $"bot_{persona.Id}@bot.local";
         var password = $"{GetBotPasswordPrefix()}{persona.Id}";
         
         var tokenUrl = $"{_config.BaseUrl}/realms/{_config.Realm}/protocol/openid-connect/token";
@@ -214,7 +218,9 @@ public class KeycloakBotProvisioner
 
     private async Task<string?> FindUserIdAsync(string username, string adminToken, CancellationToken ct)
     {
-        var url = $"{_config.BaseUrl}/admin/realms/{_config.Realm}/users?username={username}&exact=true";
+        // Search by email too (realm may store email as username)
+        var email = username.Contains("@") ? username : $"{username}@bot.local";
+        var url = $"{_config.BaseUrl}/admin/realms/{_config.Realm}/users?email={email}&exact=true";
         var request = new HttpRequestMessage(HttpMethod.Get, url);
         request.Headers.Authorization = new AuthenticationHeaderValue("Bearer", adminToken);
         
@@ -225,6 +231,24 @@ public class KeycloakBotProvisioner
         var users = JsonSerializer.Deserialize<JsonElement[]>(json, JsonOpts);
         
         return users?.Length > 0 ? users[0].GetProperty("id").GetString() : null;
+    }
+
+    private async Task RemoveRequiredActionsAsync(string userId, string adminToken, CancellationToken ct)
+    {
+        var url = $"{_config.BaseUrl}/admin/realms/{_config.Realm}/users/{userId}";
+        var payload = new { requiredActions = Array.Empty<string>() };
+        
+        var request = new HttpRequestMessage(HttpMethod.Put, url)
+        {
+            Content = new StringContent(JsonSerializer.Serialize(payload, JsonOpts), Encoding.UTF8, "application/json")
+        };
+        request.Headers.Authorization = new AuthenticationHeaderValue("Bearer", adminToken);
+        
+        var response = await _http.SendAsync(request, ct);
+        if (!response.IsSuccessStatusCode)
+        {
+            _logger.LogWarning("Failed to remove required actions for user {UserId}: {Status}", userId, response.StatusCode);
+        }
     }
 
     private async Task SetPasswordAsync(string userId, string password, string adminToken, CancellationToken ct)

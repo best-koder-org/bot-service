@@ -90,20 +90,36 @@ public class DatingAppApiClient
             return idProp.GetInt32();
         if (response.Value.TryGetProperty("Id", out var idProp2) && idProp2.ValueKind == JsonValueKind.Number)
             return idProp2.GetInt32();
+        // Unwrap {success, data: {id}} envelope (UserService standard response)
+        if (response.Value.TryGetProperty("data", out var dataProp) && dataProp.ValueKind == JsonValueKind.Object)
+        {
+            if (dataProp.TryGetProperty("id", out var dataId) && dataId.ValueKind == JsonValueKind.Number)
+                return dataId.GetInt32();
+            if (dataProp.TryGetProperty("Id", out var dataId2) && dataId2.ValueKind == JsonValueKind.Number)
+                return dataId2.GetInt32();
+        }
         if (response.Value.TryGetProperty("value", out var valueProp) && valueProp.ValueKind == JsonValueKind.Object)
         {
             if (valueProp.TryGetProperty("id", out var nestedId))
                 return nestedId.GetInt32();
         }
         
-        _logger.LogWarning("Could not parse profile ID from response for bot {Id}", persona.Id);
+        _logger.LogWarning("Could not parse profile ID from response for bot {Id}: {Response}", 
+            persona.Id, response.Value.ToString()[..Math.Min(200, response.Value.ToString().Length)]);
         return null;
     }
 
-    /// <summary>Get own profile via GET /api/profiles/me</summary>
+    /// <summary>Get own profile via GET /api/profiles/me (unwraps {success, data} envelope)</summary>
     public async Task<JsonElement?> GetMyProfileAsync(string token, CancellationToken ct)
     {
-        return await GetAsync($"{_endpoints.UserService}/api/profiles/me", token, ct);
+        var result = await GetAsync($"{_endpoints.UserService}/api/profiles/me", token, ct);
+        if (result == null) return null;
+        
+        // Unwrap {success, data: {...}} envelope
+        if (result.Value.TryGetProperty("data", out var dataProp) && dataProp.ValueKind == JsonValueKind.Object)
+            return dataProp;
+        
+        return result;
     }
 
     // ─── Discover & Swipe ───────────────────────────────────────
@@ -167,9 +183,8 @@ public class DatingAppApiClient
     {
         var payload = new
         {
-            receiverId = receiverKeycloakId,
-            content,
-            type = "Text"
+            recipientUserId = receiverKeycloakId,
+            text = content
         };
         
         var result = await PostAsync($"{_endpoints.MessagingService}/api/Messages", payload, token, ct);
@@ -226,6 +241,30 @@ public class DatingAppApiClient
         }
 
         return messages;
+    }
+
+    // ─── Profile Lookup ────────────────────────────────────────
+
+    /// <summary>Look up a user's Keycloak UUID by their integer profile ID</summary>
+    public async Task<string?> GetKeycloakIdForProfileAsync(int profileId, string token, CancellationToken ct)
+    {
+        var result = await GetAsync($"{_endpoints.UserService}/api/UserProfiles/{profileId}", token, ct);
+        if (result == null) return null;
+
+        // Unwrap {success, data: {...}} envelope
+        var profile = result.Value;
+        if (profile.TryGetProperty("data", out var dataProp) && dataProp.ValueKind == JsonValueKind.Object)
+            profile = dataProp;
+
+        // Try keycloakId field (added to UserProfileDetailDto)
+        if (profile.TryGetProperty("keycloakId", out var kcProp))
+        {
+            var kcId = kcProp.GetString();
+            if (!string.IsNullOrEmpty(kcId) && kcId != "00000000-0000-0000-0000-000000000000")
+                return kcId;
+        }
+
+        return null;
     }
 
     // ─── Photo Upload ──────────────────────────────────────────
