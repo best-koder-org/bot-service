@@ -97,6 +97,7 @@ builder.Services.AddHostedService<SyntheticUserService>();
 builder.Services.AddHostedService<WarmupBotService>();
 builder.Services.AddHostedService<LoadActorService>();
 builder.Services.AddHostedService<ChaosAgentService>();
+builder.Services.AddHostedService<BotService.Services.Observer.BotReporter>();
 
 // Controllers + Swagger
 builder.Services.AddControllers();

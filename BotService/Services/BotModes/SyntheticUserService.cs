@@ -4,6 +4,7 @@ using BotService.Data;
 using BotService.Models;
 using BotService.Services.Content;
 using BotService.Services.Conversation;
+using BotService.Services.Observer;
 using BotService.Services.Keycloak;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Options;
@@ -33,6 +34,7 @@ public class SyntheticUserService : BackgroundService
     private readonly MessageContentProvider _messageProvider;
     private readonly IConversationEngine _conversationEngine;
     private readonly Random _random = new();
+    private readonly BotObserver _observer;
 
     /// <summary>Max unanswered messages to any single user before flagging unresponsive</summary>
     private const int MaxUnansweredMessages = 5;
@@ -43,7 +45,8 @@ public class SyntheticUserService : BackgroundService
         IOptionsMonitor<BotServiceOptions> config,
         BotPersonaEngine personaEngine,
         MessageContentProvider messageProvider,
-        IConversationEngine conversationEngine)
+        IConversationEngine conversationEngine,
+        BotObserver observer)
     {
         _serviceProvider = serviceProvider;
         _logger = logger;
@@ -51,6 +54,7 @@ public class SyntheticUserService : BackgroundService
         _personaEngine = personaEngine;
         _messageProvider = messageProvider;
         _conversationEngine = conversationEngine;
+        _observer = observer;
     }
 
     protected override async Task ExecuteAsync(CancellationToken stoppingToken)
@@ -537,6 +541,26 @@ public class SyntheticUserService : BackgroundService
                 }
             }
 
+            // ─── Message Classification (T323/T324): classify received messages ─────
+            if (recentMessages.Count > 0)
+            {
+                var lastReceived = recentMessages.FirstOrDefault(m => m.SenderUserId != (bot.KeycloakUserId ?? ""));
+                if (lastReceived != null && !string.IsNullOrEmpty(lastReceived.Content))
+                {
+                    var tone = MessageClassifier.Classify(lastReceived.Content);
+                    if (MessageClassifier.IsSafetyRelevant(tone))
+                    {
+                        await _observer.RecordObservation(
+                            FindingType.SafetyIncident, FindingSeverity.High,
+                            $"Safety-relevant message detected: {tone}",
+                            $"Received {tone} message from {otherUserId}: \"{lastReceived.Content[..Math.Min(50, lastReceived.Content.Length)]}...\"",
+                            "messaging-service", persona.FirstName, bot.KeycloakUserId ?? "");
+                        _logger.LogWarning("Bot {BotId}: received {Tone} message from {User}",
+                            bot.PersonaId, tone, otherUserId);
+                    }
+                }
+            }
+
             var context = new ConversationContext
             {
                 Persona = persona,
@@ -548,6 +572,18 @@ public class SyntheticUserService : BackgroundService
 
             var reply = await _conversationEngine.GenerateReplyAsync(context, ct);
             message = reply.Message;
+
+            // ─── Conversation Metrics (T325): track stage ─────
+            var msgContents = recentMessages.Select(m => m.Content).ToList();
+            var stageResult = ConversationStageDetector.Detect(bot.ConversationCount, msgContents);
+            if (stageResult.Reason != "message_count")
+            {
+                await _observer.RecordObservation(
+                    FindingType.ConversationMetric, FindingSeverity.Info,
+                    $"Stage accelerated: {stageResult.Stage} ({stageResult.Reason})",
+                    $"Conversation with {otherUserId} reached {stageResult.Stage} via {stageResult.Reason} at message #{bot.ConversationCount}",
+                    "bot-service", persona.FirstName, bot.KeycloakUserId ?? "");
+            }
 
             _logger.LogDebug("Bot {BotId}: generated {Source} message ({Provider}, {Tokens} tokens, {Latency}ms)",
                 bot.PersonaId, reply.Source, reply.Provider ?? "n/a", reply.TokensUsed, reply.LatencyMs);
