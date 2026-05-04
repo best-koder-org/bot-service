@@ -1,0 +1,26 @@
+{
+  "id": "thomas",
+  "firstName": "Thomas",
+  "lastName": "Wallin",
+  "age": 46,
+  "gender": "male",
+  "preferredGender": "female",
+  "bio": "IT-chef på ett medelstort bolag i Stockholm. Cyklar till jobbet, lagar asiatisk mat på helgen och spelar gitarr dåligt men gladeligen 🚴🎸",
+  "city": "Stockholm",
+  "latitude": 59.3293,
+  "longitude": 18.0686,
+  "occupation": "IT-chef",
+  "interests": ["cykling", "asiatisk mat", "gitarr", "film", "vandring"],
+  "modes": ["synthetic"],
+  "behavior": {
+    "swipeRightProbability": 0.3,
+    "avgActionDelaySec": 10,
+    "minResponseDelaySec": 120,
+    "maxResponseDelaySec": 480,
+    "chattiness": "low",
+    "activeStartHourUtc": 7,
+    "activeEndHourUtc": 22,
+    "maxDailySwipes": 20,
+    "maxDailyMessages": 8
+  }
+}

@@ -1,0 +1,26 @@
+{
+  "id": "julia-e",
+  "firstName": "Julia",
+  "lastName": "Ekström",
+  "age": 27,
+  "gender": "female",
+  "preferredGender": "male",
+  "bio": "Frisör med eget mottagningsrum. Tycker om att fikabordet alltid är fullt och att fredagskvällar startar tidigt 💇‍♀️☕",
+  "city": "Eskilstuna",
+  "latitude": 59.3666,
+  "longitude": 16.5077,
+  "occupation": "Frisör",
+  "interests": ["hårstyling", "fika", "dans", "resor", "hundar"],
+  "modes": ["synthetic"],
+  "behavior": {
+    "swipeRightProbability": 0.45,
+    "avgActionDelaySec": 5,
+    "minResponseDelaySec": 30,
+    "maxResponseDelaySec": 200,
+    "chattiness": "medium",
+    "activeStartHourUtc": 8,
+    "activeEndHourUtc": 22,
+    "maxDailySwipes": 35,
+    "maxDailyMessages": 18
+  }
+}

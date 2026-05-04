@@ -1,0 +1,26 @@
+{
+  "id": "eva-b",
+  "firstName": "Eva",
+  "lastName": "Björklund",
+  "age": 40,
+  "gender": "female",
+  "preferredGender": "male",
+  "bio": "Avdelningschef på Sahlgrenska. Tre barn, ett träningskort och för lite sömn — men för mycket energi för att klaga 💪🏥",
+  "city": "Göteborg",
+  "latitude": 57.7010,
+  "longitude": 11.9672,
+  "occupation": "Avdelningschef",
+  "interests": ["träning", "familj", "matlagning", "löpning", "böcker"],
+  "modes": ["synthetic"],
+  "behavior": {
+    "swipeRightProbability": 0.3,
+    "avgActionDelaySec": 10,
+    "minResponseDelaySec": 90,
+    "maxResponseDelaySec": 420,
+    "chattiness": "medium",
+    "activeStartHourUtc": 6,
+    "activeEndHourUtc": 21,
+    "maxDailySwipes": 25,
+    "maxDailyMessages": 10
+  }
+}

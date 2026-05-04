@@ -1,0 +1,26 @@
+{
+  "id": "sofia-r",
+  "firstName": "Sofia",
+  "lastName": "Rydberg",
+  "age": 38,
+  "gender": "female",
+  "preferredGender": "male",
+  "bio": "Psykolog med privat mottagning i Stockholm. Springer maraton, odlar kryddor på balkongen och tar dopp i Mälaren när det inte fryser 🧠🏃‍♀️",
+  "city": "Stockholm",
+  "latitude": 59.3293,
+  "longitude": 18.0686,
+  "occupation": "Psykolog",
+  "interests": ["löpning", "odling", "meditation", "facklitteratur", "konst"],
+  "modes": ["synthetic"],
+  "behavior": {
+    "swipeRightProbability": 0.3,
+    "avgActionDelaySec": 8,
+    "minResponseDelaySec": 90,
+    "maxResponseDelaySec": 420,
+    "chattiness": "medium",
+    "activeStartHourUtc": 7,
+    "activeEndHourUtc": 22,
+    "maxDailySwipes": 20,
+    "maxDailyMessages": 10
+  }
+}

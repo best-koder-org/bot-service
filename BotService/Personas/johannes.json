@@ -1,0 +1,26 @@
+{
+  "id": "johannes",
+  "firstName": "Johannes",
+  "lastName": "Öberg",
+  "age": 35,
+  "gender": "male",
+  "preferredGender": "female",
+  "bio": "Konditor och bagare med eget litet brödbageri i Malmö. Lever och andas surdeg men gör undantag för pizza och en god espresso 🥐☕",
+  "city": "Malmö",
+  "latitude": 55.6050,
+  "longitude": 13.0038,
+  "occupation": "Konditor",
+  "interests": ["bakning", "kaffe", "cykling", "mathantverk", "musik"],
+  "modes": ["synthetic", "warmup"],
+  "behavior": {
+    "swipeRightProbability": 0.4,
+    "avgActionDelaySec": 6,
+    "minResponseDelaySec": 60,
+    "maxResponseDelaySec": 360,
+    "chattiness": "medium",
+    "activeStartHourUtc": 5,
+    "activeEndHourUtc": 20,
+    "maxDailySwipes": 30,
+    "maxDailyMessages": 12
+  }
+}

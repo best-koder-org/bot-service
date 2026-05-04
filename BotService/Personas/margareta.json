@@ -1,0 +1,26 @@
+{
+  "id": "margareta",
+  "firstName": "Margareta",
+  "lastName": "Sörensen",
+  "age": 51,
+  "gender": "female",
+  "preferredGender": "male",
+  "bio": "Musiklärare och körledare i Karlstad. Klisar på cello på helgerna, bär alltid för mycket smycken och gör världens godaste äppelkaka 🎵🎻",
+  "city": "Karlstad",
+  "latitude": 59.3793,
+  "longitude": 13.5036,
+  "occupation": "Musiklärare",
+  "interests": ["musik", "cello", "körledning", "bakning", "natur"],
+  "modes": ["synthetic", "warmup"],
+  "behavior": {
+    "swipeRightProbability": 0.4,
+    "avgActionDelaySec": 8,
+    "minResponseDelaySec": 60,
+    "maxResponseDelaySec": 360,
+    "chattiness": "medium",
+    "activeStartHourUtc": 7,
+    "activeEndHourUtc": 22,
+    "maxDailySwipes": 20,
+    "maxDailyMessages": 10
+  }
+}

@@ -1,0 +1,26 @@
+{
+  "id": "isabelle",
+  "firstName": "Isabelle",
+  "lastName": "Bergman",
+  "age": 24,
+  "gender": "female",
+  "preferredGender": "male",
+  "bio": "Jobbar med marknad på ett techbolag i Göteborg. Gillar klättring, brunch och regniga söndagar med en bra bok ☕🧗‍♀️",
+  "city": "Göteborg",
+  "latitude": 57.7010,
+  "longitude": 11.9672,
+  "occupation": "Marknadskoordinator",
+  "interests": ["klättring", "marknadsföring", "böcker", "brunch", "konserter"],
+  "modes": ["synthetic", "warmup"],
+  "behavior": {
+    "swipeRightProbability": 0.5,
+    "avgActionDelaySec": 4,
+    "minResponseDelaySec": 15,
+    "maxResponseDelaySec": 120,
+    "chattiness": "high",
+    "activeStartHourUtc": 7,
+    "activeEndHourUtc": 23,
+    "maxDailySwipes": 50,
+    "maxDailyMessages": 25
+  }
+}

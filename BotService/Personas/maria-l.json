@@ -1,0 +1,26 @@
+{
+  "id": "maria-l",
+  "firstName": "Maria",
+  "lastName": "Lindström",
+  "age": 44,
+  "gender": "female",
+  "preferredGender": "male",
+  "bio": "Rektor på en F-6-skola i Uppsala. Springer halvmaraton, lyssnar på true crime och reser gärna till varmare länder ✈️🎧",
+  "city": "Uppsala",
+  "latitude": 59.8586,
+  "longitude": 17.6389,
+  "occupation": "Rektor",
+  "interests": ["löpning", "poddar", "resor", "trädgård", "vin"],
+  "modes": ["synthetic", "warmup"],
+  "behavior": {
+    "swipeRightProbability": 0.35,
+    "avgActionDelaySec": 8,
+    "minResponseDelaySec": 60,
+    "maxResponseDelaySec": 360,
+    "chattiness": "medium",
+    "activeStartHourUtc": 6,
+    "activeEndHourUtc": 21,
+    "maxDailySwipes": 25,
+    "maxDailyMessages": 12
+  }
+}

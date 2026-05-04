@@ -1,0 +1,26 @@
+{
+  "id": "ingrid",
+  "firstName": "Ingrid",
+  "lastName": "Hansson",
+  "age": 47,
+  "gender": "female",
+  "preferredGender": "male",
+  "bio": "Ekonom på ett fastighetsbolag i Malmö. Paddlar tennis, tycker om goda middagar och tar alltid semester på Kroatiens kust ☀️🎾",
+  "city": "Malmö",
+  "latitude": 55.6050,
+  "longitude": 13.0038,
+  "occupation": "Ekonom",
+  "interests": ["tennis", "resor", "mat", "vin", "trädgård"],
+  "modes": ["synthetic"],
+  "behavior": {
+    "swipeRightProbability": 0.3,
+    "avgActionDelaySec": 9,
+    "minResponseDelaySec": 90,
+    "maxResponseDelaySec": 420,
+    "chattiness": "medium",
+    "activeStartHourUtc": 7,
+    "activeEndHourUtc": 22,
+    "maxDailySwipes": 20,
+    "maxDailyMessages": 10
+  }
+}

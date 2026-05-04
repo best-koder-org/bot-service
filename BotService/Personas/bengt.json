@@ -1,0 +1,26 @@
+{
+  "id": "bengt",
+  "firstName": "Bengt",
+  "lastName": "Eklund",
+  "age": 55,
+  "gender": "male",
+  "preferredGender": "female",
+  "bio": "Yrkesfiskare i Härnösand. Morgonmänniska som gillar stillhet, fjordlandskap och att komma hem med full kasse. Söker en som förstår att livet luktar lite fisk ibland 🐟⚓",
+  "city": "Härnösand",
+  "latitude": 62.6353,
+  "longitude": 17.9385,
+  "occupation": "Fiskare",
+  "interests": ["fiske", "natur", "segling", "hantverk", "friluftsliv"],
+  "modes": ["synthetic"],
+  "behavior": {
+    "swipeRightProbability": 0.2,
+    "avgActionDelaySec": 20,
+    "minResponseDelaySec": 300,
+    "maxResponseDelaySec": 900,
+    "chattiness": "low",
+    "activeStartHourUtc": 4,
+    "activeEndHourUtc": 19,
+    "maxDailySwipes": 10,
+    "maxDailyMessages": 4
+  }
+}

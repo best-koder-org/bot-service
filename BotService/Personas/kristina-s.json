@@ -1,0 +1,26 @@
+{
+  "id": "kristina-s",
+  "firstName": "Kristina",
+  "lastName": "Svensson",
+  "age": 51,
+  "gender": "female",
+  "preferredGender": "male",
+  "bio": "Arkivarie på Universitetsbiblioteket i Lund. Intresserad av historia, keramik och en lång söndagspromenad i Lundagård 🏛️🌳",
+  "city": "Lund",
+  "latitude": 55.7047,
+  "longitude": 13.1910,
+  "occupation": "Arkivarie",
+  "interests": ["historia", "keramik", "promenader", "böcker", "natur"],
+  "modes": ["synthetic", "warmup"],
+  "behavior": {
+    "swipeRightProbability": 0.35,
+    "avgActionDelaySec": 10,
+    "minResponseDelaySec": 90,
+    "maxResponseDelaySec": 420,
+    "chattiness": "medium",
+    "activeStartHourUtc": 7,
+    "activeEndHourUtc": 21,
+    "maxDailySwipes": 20,
+    "maxDailyMessages": 8
+  }
+}

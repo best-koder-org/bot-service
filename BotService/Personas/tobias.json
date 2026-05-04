@@ -1,0 +1,26 @@
+{
+  "id": "tobias",
+  "firstName": "Tobias",
+  "lastName": "Fransson",
+  "age": 39,
+  "gender": "male",
+  "preferredGender": "female",
+  "bio": "Brandman i Örebro. Tränar hårt på jobbet och slappnar av med grillning i trädgården. Pappa till en labrador som gillar alla 🔥🐕",
+  "city": "Örebro",
+  "latitude": 59.2753,
+  "longitude": 15.2134,
+  "occupation": "Brandman",
+  "interests": ["träning", "grillning", "hundar", "fotboll", "friluftsliv"],
+  "modes": ["synthetic"],
+  "behavior": {
+    "swipeRightProbability": 0.35,
+    "avgActionDelaySec": 8,
+    "minResponseDelaySec": 90,
+    "maxResponseDelaySec": 480,
+    "chattiness": "medium",
+    "activeStartHourUtc": 7,
+    "activeEndHourUtc": 22,
+    "maxDailySwipes": 25,
+    "maxDailyMessages": 10
+  }
+}

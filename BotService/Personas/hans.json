@@ -1,0 +1,26 @@
+{
+  "id": "hans",
+  "firstName": "Hans",
+  "lastName": "Pettersson",
+  "age": 44,
+  "gender": "male",
+  "preferredGender": "female",
+  "bio": "Bilmekaniker i Borås. Gillar att mecka med klassiska bilar på helgen, kolla på hockey och grilla med kompisarna ⚙️🏒",
+  "city": "Borås",
+  "latitude": 57.7210,
+  "longitude": 12.9401,
+  "occupation": "Bilmekaniker",
+  "interests": ["bilar", "hockey", "grillning", "löpning", "klassiska fordon"],
+  "modes": ["synthetic"],
+  "behavior": {
+    "swipeRightProbability": 0.3,
+    "avgActionDelaySec": 10,
+    "minResponseDelaySec": 120,
+    "maxResponseDelaySec": 480,
+    "chattiness": "low",
+    "activeStartHourUtc": 6,
+    "activeEndHourUtc": 22,
+    "maxDailySwipes": 20,
+    "maxDailyMessages": 8
+  }
+}

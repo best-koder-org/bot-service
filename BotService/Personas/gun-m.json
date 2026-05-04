@@ -1,0 +1,26 @@
+{
+  "id": "gun-m",
+  "firstName": "Gun",
+  "lastName": "Martinsson",
+  "age": 54,
+  "gender": "female",
+  "preferredGender": "male",
+  "bio": "Pensionerad sjuksköterska som nu hinner med allt jag skjutit upp. Odlar rosor, målar akvarell och hälsar på barnbarnen i Dalarna varje sommar 🌹🎨",
+  "city": "Stockholm",
+  "latitude": 59.3293,
+  "longitude": 18.0686,
+  "occupation": "Pensionär",
+  "interests": ["trädgård", "akvarell", "barnbarn", "promenader", "yoga"],
+  "modes": ["synthetic", "warmup"],
+  "behavior": {
+    "swipeRightProbability": 0.4,
+    "avgActionDelaySec": 10,
+    "minResponseDelaySec": 90,
+    "maxResponseDelaySec": 480,
+    "chattiness": "medium",
+    "activeStartHourUtc": 8,
+    "activeEndHourUtc": 21,
+    "maxDailySwipes": 20,
+    "maxDailyMessages": 10
+  }
+}

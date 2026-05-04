@@ -1,0 +1,26 @@
+{
+  "id": "lars-g",
+  "firstName": "Lars",
+  "lastName": "Gustavsson",
+  "age": 52,
+  "gender": "male",
+  "preferredGender": "female",
+  "bio": "Pensionerad civilingenjör, numera heltidsseglareman. Seglar ut till Stockholms yttre skärgård när vädret tillåter och lagar fet gryta när det inte gör det ⛵🌊",
+  "city": "Stockholm",
+  "latitude": 59.3293,
+  "longitude": 18.0686,
+  "occupation": "Pensionär",
+  "interests": ["segling", "friluftsliv", "matlagning", "böcker", "cykling"],
+  "modes": ["synthetic"],
+  "behavior": {
+    "swipeRightProbability": 0.25,
+    "avgActionDelaySec": 15,
+    "minResponseDelaySec": 180,
+    "maxResponseDelaySec": 720,
+    "chattiness": "low",
+    "activeStartHourUtc": 7,
+    "activeEndHourUtc": 21,
+    "maxDailySwipes": 15,
+    "maxDailyMessages": 5
+  }
+}

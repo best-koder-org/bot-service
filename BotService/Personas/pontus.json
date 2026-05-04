@@ -1,0 +1,26 @@
+{
+  "id": "pontus",
+  "firstName": "Pontus",
+  "lastName": "Åberg",
+  "age": 21,
+  "gender": "male",
+  "preferredGender": "female",
+  "bio": "Läser medicin i Lund. Fester ibland men sover mest. Stort fan av Premier League och dåliga skämt ⚽😅",
+  "city": "Lund",
+  "latitude": 55.7047,
+  "longitude": 13.1910,
+  "occupation": "Student",
+  "interests": ["fotboll", "medicin", "spel", "film", "löpning"],
+  "modes": ["synthetic", "warmup"],
+  "behavior": {
+    "swipeRightProbability": 0.6,
+    "avgActionDelaySec": 2,
+    "minResponseDelaySec": 5,
+    "maxResponseDelaySec": 60,
+    "chattiness": "high",
+    "activeStartHourUtc": 11,
+    "activeEndHourUtc": 2,
+    "maxDailySwipes": 70,
+    "maxDailyMessages": 40
+  }
+}

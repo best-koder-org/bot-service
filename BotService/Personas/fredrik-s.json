@@ -1,0 +1,26 @@
+{
+  "id": "fredrik-s",
+  "firstName": "Fredrik",
+  "lastName": "Sundström",
+  "age": 37,
+  "gender": "male",
+  "preferredGender": "female",
+  "bio": "Kör långkörare längs Norrlandskusten. Podcastfantast, amatörfotograf och mästare på att hitta de bästa rastplatscaféerna 🚛📷",
+  "city": "Sundsvall",
+  "latitude": 62.3908,
+  "longitude": 17.3069,
+  "occupation": "Lastbilschaufför",
+  "interests": ["fotografering", "podcasts", "natur", "bilar", "fiske"],
+  "modes": ["synthetic"],
+  "behavior": {
+    "swipeRightProbability": 0.3,
+    "avgActionDelaySec": 12,
+    "minResponseDelaySec": 120,
+    "maxResponseDelaySec": 600,
+    "chattiness": "low",
+    "activeStartHourUtc": 7,
+    "activeEndHourUtc": 21,
+    "maxDailySwipes": 20,
+    "maxDailyMessages": 7
+  }
+}

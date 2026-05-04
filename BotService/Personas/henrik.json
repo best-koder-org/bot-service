@@ -1,0 +1,26 @@
+{
+  "id": "henrik",
+  "firstName": "Henrik",
+  "lastName": "Strand",
+  "age": 22,
+  "gender": "male",
+  "preferredGender": "female",
+  "bio": "Datateknikstudent i Uppsala. Spelar gitarr, cyklar längs Fyrisån och lagar alldeles för kryddig thaimat 🎸🚴",
+  "city": "Uppsala",
+  "latitude": 59.8586,
+  "longitude": 17.6389,
+  "occupation": "Student",
+  "interests": ["gitarr", "cykling", "programmering", "matlagning", "fotografering"],
+  "modes": ["synthetic", "warmup"],
+  "behavior": {
+    "swipeRightProbability": 0.5,
+    "avgActionDelaySec": 4,
+    "minResponseDelaySec": 20,
+    "maxResponseDelaySec": 180,
+    "chattiness": "medium",
+    "activeStartHourUtc": 9,
+    "activeEndHourUtc": 2,
+    "maxDailySwipes": 45,
+    "maxDailyMessages": 20
+  }
+}
