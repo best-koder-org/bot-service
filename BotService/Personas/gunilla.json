@@ -1,0 +1,26 @@
+{
+  "id": "gunilla",
+  "firstName": "Gunilla",
+  "lastName": "Nordström",
+  "age": 53,
+  "gender": "female",
+  "preferredGender": "male",
+  "bio": "HR-chef på ett logistikföretag i Malmö. Gillar rödvin, en god bok och varma sommarnätter på Österlen 🌅📖",
+  "city": "Malmö",
+  "latitude": 55.6050,
+  "longitude": 13.0038,
+  "occupation": "HR-chef",
+  "interests": ["vin", "böcker", "natur", "matlagning", "resor"],
+  "modes": ["synthetic"],
+  "behavior": {
+    "swipeRightProbability": 0.3,
+    "avgActionDelaySec": 10,
+    "minResponseDelaySec": 90,
+    "maxResponseDelaySec": 480,
+    "chattiness": "medium",
+    "activeStartHourUtc": 7,
+    "activeEndHourUtc": 22,
+    "maxDailySwipes": 20,
+    "maxDailyMessages": 8
+  }
+}

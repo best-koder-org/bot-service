@@ -1,0 +1,26 @@
+{
+  "id": "ake",
+  "firstName": "Åke",
+  "lastName": "Bergqvist",
+  "age": 53,
+  "gender": "male",
+  "preferredGender": "female",
+  "bio": "Jobbade som lastmaskinoperatör tills jag gick i pension. Nu bygger jag knivskaft i källaren och åker skidor om vintern. Bor i stugan vid Runn 🛷🔪",
+  "city": "Falun",
+  "latitude": 60.6065,
+  "longitude": 15.6355,
+  "occupation": "Pensionär",
+  "interests": ["knivsmide", "skidåkning", "fiske", "skog", "hantverk"],
+  "modes": ["synthetic"],
+  "behavior": {
+    "swipeRightProbability": 0.2,
+    "avgActionDelaySec": 20,
+    "minResponseDelaySec": 300,
+    "maxResponseDelaySec": 900,
+    "chattiness": "low",
+    "activeStartHourUtc": 6,
+    "activeEndHourUtc": 20,
+    "maxDailySwipes": 10,
+    "maxDailyMessages": 4
+  }
+}

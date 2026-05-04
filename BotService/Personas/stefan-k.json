@@ -1,0 +1,26 @@
+{
+  "id": "stefan-k",
+  "firstName": "Stefan",
+  "lastName": "Kjellberg",
+  "age": 48,
+  "gender": "male",
+  "preferredGender": "female",
+  "bio": "Driver restaurang i Norrköping. Sen kväll är vardagen men lördag morgon är helig — då fiskar jag i Motala ström 🎣🍷",
+  "city": "Norrköping",
+  "latitude": 58.5877,
+  "longitude": 16.1924,
+  "occupation": "Restaurangägare",
+  "interests": ["mat", "vin", "fiske", "resor", "musik"],
+  "modes": ["synthetic"],
+  "behavior": {
+    "swipeRightProbability": 0.25,
+    "avgActionDelaySec": 12,
+    "minResponseDelaySec": 180,
+    "maxResponseDelaySec": 600,
+    "chattiness": "low",
+    "activeStartHourUtc": 11,
+    "activeEndHourUtc": 2,
+    "maxDailySwipes": 15,
+    "maxDailyMessages": 6
+  }
+}

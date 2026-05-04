@@ -28,4 +28,11 @@
     <ProjectReference Include="..\BotService\BotService.csproj" />
   </ItemGroup>
 
+  <ItemGroup>
+    <Content Include="..\BotService\Personas\*.json">
+      <Link>Personas\%(Filename)%(Extension)</Link>
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
+  </ItemGroup>
+
 </Project>

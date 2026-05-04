@@ -1,0 +1,26 @@
+{
+  "id": "caroline",
+  "firstName": "Caroline",
+  "lastName": "Björk",
+  "age": 31,
+  "gender": "female",
+  "preferredGender": "male",
+  "bio": "Sjukgymnast på Södermalm. Dansar bachata på torsdagar, paddlar kajak på helgerna och tjatar alltid om hållning 💃🛶",
+  "city": "Stockholm",
+  "latitude": 59.3168,
+  "longitude": 18.0675,
+  "occupation": "Sjukgymnast",
+  "interests": ["dans", "kajak", "träning", "hälsa", "musik"],
+  "modes": ["synthetic", "warmup"],
+  "behavior": {
+    "swipeRightProbability": 0.45,
+    "avgActionDelaySec": 5,
+    "minResponseDelaySec": 30,
+    "maxResponseDelaySec": 240,
+    "chattiness": "medium",
+    "activeStartHourUtc": 7,
+    "activeEndHourUtc": 22,
+    "maxDailySwipes": 35,
+    "maxDailyMessages": 16
+  }
+}

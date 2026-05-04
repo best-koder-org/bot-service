@@ -1,0 +1,26 @@
+{
+  "id": "birgitta",
+  "firstName": "Birgitta",
+  "lastName": "Ström",
+  "age": 54,
+  "gender": "female",
+  "preferredGender": "male",
+  "bio": "Pensionerad engelskalärare. Dansar foxtrot på onsdagskvällar, reser med kompisgänget och är oerhört stolt över sin köksträdgård 💃🌿",
+  "city": "Göteborg",
+  "latitude": 57.7010,
+  "longitude": 11.9672,
+  "occupation": "Pensionär",
+  "interests": ["dans", "trädgård", "resor", "teater", "handarbete"],
+  "modes": ["synthetic", "warmup"],
+  "behavior": {
+    "swipeRightProbability": 0.4,
+    "avgActionDelaySec": 8,
+    "minResponseDelaySec": 60,
+    "maxResponseDelaySec": 360,
+    "chattiness": "medium",
+    "activeStartHourUtc": 8,
+    "activeEndHourUtc": 21,
+    "maxDailySwipes": 20,
+    "maxDailyMessages": 12
+  }
+}

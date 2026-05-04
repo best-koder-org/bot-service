@@ -1,0 +1,26 @@
+{
+  "id": "michael",
+  "firstName": "Michael",
+  "lastName": "Nordin",
+  "age": 49,
+  "gender": "male",
+  "preferredGender": "female",
+  "bio": "Jobbar nattskift som väktare i Stockholm. Motionerar på morgonen, lagar mat till grannarna och lyssnar på alldeles för mycket reggae 🎵🌙",
+  "city": "Stockholm",
+  "latitude": 59.3293,
+  "longitude": 18.0686,
+  "occupation": "Väktare",
+  "interests": ["musik", "matlagning", "reggae", "träning", "natur"],
+  "modes": ["synthetic"],
+  "behavior": {
+    "swipeRightProbability": 0.3,
+    "avgActionDelaySec": 10,
+    "minResponseDelaySec": 120,
+    "maxResponseDelaySec": 540,
+    "chattiness": "medium",
+    "activeStartHourUtc": 9,
+    "activeEndHourUtc": 18,
+    "maxDailySwipes": 20,
+    "maxDailyMessages": 10
+  }
+}

@@ -1,0 +1,26 @@
+{
+  "id": "rolf",
+  "firstName": "Rolf",
+  "lastName": "Engström",
+  "age": 52,
+  "gender": "male",
+  "preferredGender": "female",
+  "bio": "Förtidspensionerad polis på Gotland. Odlar på sommaren, vandrar på hösten och funderar på att skriva en bok om allt jag sett 🌻🚔",
+  "city": "Visby",
+  "latitude": 57.6348,
+  "longitude": 18.2948,
+  "occupation": "Pensionär",
+  "interests": ["odling", "vandring", "skrivande", "historia", "fiske"],
+  "modes": ["synthetic"],
+  "behavior": {
+    "swipeRightProbability": 0.25,
+    "avgActionDelaySec": 15,
+    "minResponseDelaySec": 180,
+    "maxResponseDelaySec": 720,
+    "chattiness": "low",
+    "activeStartHourUtc": 7,
+    "activeEndHourUtc": 21,
+    "maxDailySwipes": 15,
+    "maxDailyMessages": 5
+  }
+}

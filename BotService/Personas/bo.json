@@ -1,0 +1,26 @@
+{
+  "id": "bo",
+  "firstName": "Bo",
+  "lastName": "Lindahl",
+  "age": 55,
+  "gender": "male",
+  "preferredGender": "female",
+  "bio": "Pensionerad sjökapten som nu bor i Göteborg och seglar för nöjes skull. Lagom pratglad, ovanligt bra på matlagning och älskar Bohuslän 🚢🦞",
+  "city": "Göteborg",
+  "latitude": 57.7010,
+  "longitude": 11.9672,
+  "occupation": "Pensionär",
+  "interests": ["segling", "matlagning", "havsfiske", "natur", "historia"],
+  "modes": ["synthetic"],
+  "behavior": {
+    "swipeRightProbability": 0.25,
+    "avgActionDelaySec": 15,
+    "minResponseDelaySec": 180,
+    "maxResponseDelaySec": 720,
+    "chattiness": "low",
+    "activeStartHourUtc": 7,
+    "activeEndHourUtc": 21,
+    "maxDailySwipes": 15,
+    "maxDailyMessages": 5
+  }
+}

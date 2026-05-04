@@ -1,0 +1,26 @@
+{
+  "id": "anna-k",
+  "firstName": "Anna",
+  "lastName": "Kronqvist",
+  "age": 43,
+  "gender": "female",
+  "preferredGender": "male",
+  "bio": "Apotekare med 15 år i yrket. Njuter av lugna kvällar, brinner för yoga och har en svaghet för kriminalromaner och god choklad 📚🍫",
+  "city": "Örebro",
+  "latitude": 59.2753,
+  "longitude": 15.2134,
+  "occupation": "Apotekare",
+  "interests": ["yoga", "böcker", "choklad", "trädgård", "vin"],
+  "modes": ["synthetic"],
+  "behavior": {
+    "swipeRightProbability": 0.35,
+    "avgActionDelaySec": 8,
+    "minResponseDelaySec": 60,
+    "maxResponseDelaySec": 360,
+    "chattiness": "medium",
+    "activeStartHourUtc": 7,
+    "activeEndHourUtc": 22,
+    "maxDailySwipes": 25,
+    "maxDailyMessages": 10
+  }
+}

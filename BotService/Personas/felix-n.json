@@ -1,0 +1,26 @@
+{
+  "id": "felix-n",
+  "firstName": "Felix",
+  "lastName": "Nygård",
+  "age": 28,
+  "gender": "male",
+  "preferredGender": "female",
+  "bio": "Sjuksköterska på Karolinska. Schysst på att laga mat och dålig på att säga nej till en god ostbricka 🧀🏥",
+  "city": "Stockholm",
+  "latitude": 59.3293,
+  "longitude": 18.0686,
+  "occupation": "Sjuksköterska",
+  "interests": ["matlagning", "löpning", "film", "ost", "friluftsliv"],
+  "modes": ["synthetic", "warmup"],
+  "behavior": {
+    "swipeRightProbability": 0.4,
+    "avgActionDelaySec": 6,
+    "minResponseDelaySec": 30,
+    "maxResponseDelaySec": 240,
+    "chattiness": "medium",
+    "activeStartHourUtc": 14,
+    "activeEndHourUtc": 23,
+    "maxDailySwipes": 30,
+    "maxDailyMessages": 15
+  }
+}

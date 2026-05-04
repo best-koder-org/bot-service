@@ -1,0 +1,26 @@
+{
+  "id": "jonas-w",
+  "firstName": "Jonas",
+  "lastName": "Wahlgren",
+  "age": 45,
+  "gender": "male",
+  "preferredGender": "female",
+  "bio": "Bonde utanför Östersund med köttdjur och lite skog. Älskar stillheten, fjällvandringar och hockeymatchen på fredagen 🐄🏔️",
+  "city": "Östersund",
+  "latitude": 63.1792,
+  "longitude": 14.6357,
+  "occupation": "Lantbrukare",
+  "interests": ["lantbruk", "fjällvandring", "jakt", "ishockey", "natur"],
+  "modes": ["synthetic"],
+  "behavior": {
+    "swipeRightProbability": 0.2,
+    "avgActionDelaySec": 15,
+    "minResponseDelaySec": 240,
+    "maxResponseDelaySec": 900,
+    "chattiness": "low",
+    "activeStartHourUtc": 5,
+    "activeEndHourUtc": 21,
+    "maxDailySwipes": 10,
+    "maxDailyMessages": 4
+  }
+}

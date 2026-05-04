@@ -1,0 +1,26 @@
+{
+  "id": "mattias",
+  "firstName": "Mattias",
+  "lastName": "Lindgren",
+  "age": 36,
+  "gender": "male",
+  "preferredGender": "female",
+  "bio": "Elektriker på eget företag i Göteborgsregionen. Helst ute i naturen med tältet, eller hemma i garaget med ett hobbyprojekt 🔧⛺",
+  "city": "Göteborg",
+  "latitude": 57.7010,
+  "longitude": 11.9672,
+  "occupation": "Elektriker",
+  "interests": ["friluftsliv", "camping", "snickeri", "ishockey", "grillning"],
+  "modes": ["synthetic"],
+  "behavior": {
+    "swipeRightProbability": 0.3,
+    "avgActionDelaySec": 10,
+    "minResponseDelaySec": 120,
+    "maxResponseDelaySec": 480,
+    "chattiness": "low",
+    "activeStartHourUtc": 6,
+    "activeEndHourUtc": 21,
+    "maxDailySwipes": 20,
+    "maxDailyMessages": 8
+  }
+}

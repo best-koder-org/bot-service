@@ -1,0 +1,26 @@
+{
+  "id": "amanda",
+  "firstName": "Amanda",
+  "lastName": "Söderström",
+  "age": 32,
+  "gender": "female",
+  "preferredGender": "male",
+  "bio": "Konstnär och illustratör i Kalmar. Målar allt från djurporträtt till abstrakta landskap. Gillar fika med kreativa människor ✏️🎨",
+  "city": "Kalmar",
+  "latitude": 56.6634,
+  "longitude": 16.3566,
+  "occupation": "Konstnär",
+  "interests": ["konst", "illustration", "fika", "natur", "musik"],
+  "modes": ["synthetic", "warmup"],
+  "behavior": {
+    "swipeRightProbability": 0.4,
+    "avgActionDelaySec": 7,
+    "minResponseDelaySec": 45,
+    "maxResponseDelaySec": 300,
+    "chattiness": "medium",
+    "activeStartHourUtc": 9,
+    "activeEndHourUtc": 23,
+    "maxDailySwipes": 30,
+    "maxDailyMessages": 14
+  }
+}

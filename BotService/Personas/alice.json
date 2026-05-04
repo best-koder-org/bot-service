@@ -1,0 +1,26 @@
+{
+  "id": "alice",
+  "firstName": "Alice",
+  "lastName": "Magnusson",
+  "age": 26,
+  "gender": "female",
+  "preferredGender": "male",
+  "bio": "Jobbar i butik men drömmer om att öppna ett eget café. Älskar att baka kanelbullar och hitta pärlor på loppis 🍂🎨",
+  "city": "Malmö",
+  "latitude": 55.6050,
+  "longitude": 13.0038,
+  "occupation": "Butiksbiträde",
+  "interests": ["bakning", "loppismarknader", "konst", "café", "promenader"],
+  "modes": ["synthetic", "warmup"],
+  "behavior": {
+    "swipeRightProbability": 0.55,
+    "avgActionDelaySec": 3,
+    "minResponseDelaySec": 10,
+    "maxResponseDelaySec": 90,
+    "chattiness": "high",
+    "activeStartHourUtc": 7,
+    "activeEndHourUtc": 22,
+    "maxDailySwipes": 55,
+    "maxDailyMessages": 30
+  }
+}

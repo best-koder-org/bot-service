@@ -1,0 +1,26 @@
+{
+  "id": "karin-h",
+  "firstName": "Karin",
+  "lastName": "Holmgren",
+  "age": 33,
+  "gender": "female",
+  "preferredGender": "male",
+  "bio": "Lärare i svenska och SO på mellanstadiet i Umeå. Älskar skidspår, nordliga stjärnhimlar och ett glas rödvin vid brasan 🎿🌌",
+  "city": "Umeå",
+  "latitude": 63.8258,
+  "longitude": 20.2630,
+  "occupation": "Lärare",
+  "interests": ["skidåkning", "friluftsliv", "läsning", "vin", "matlagning"],
+  "modes": ["synthetic", "warmup"],
+  "behavior": {
+    "swipeRightProbability": 0.35,
+    "avgActionDelaySec": 7,
+    "minResponseDelaySec": 60,
+    "maxResponseDelaySec": 300,
+    "chattiness": "medium",
+    "activeStartHourUtc": 6,
+    "activeEndHourUtc": 21,
+    "maxDailySwipes": 25,
+    "maxDailyMessages": 12
+  }
+}

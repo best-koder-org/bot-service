@@ -1,0 +1,26 @@
+{
+  "id": "mats-l",
+  "firstName": "Mats",
+  "lastName": "Lindqvist",
+  "age": 50,
+  "gender": "male",
+  "preferredGender": "female",
+  "bio": "Rörmokare med 25 år i yrket. Spelar bandy på vintern, sjunger i manskör och är passionerat ointresserad av sociala medier 🎵🔧",
+  "city": "Linköping",
+  "latitude": 58.4108,
+  "longitude": 15.6214,
+  "occupation": "Rörmokare",
+  "interests": ["bandy", "körsång", "friluftsliv", "matlagning", "hantverk"],
+  "modes": ["synthetic"],
+  "behavior": {
+    "swipeRightProbability": 0.25,
+    "avgActionDelaySec": 15,
+    "minResponseDelaySec": 180,
+    "maxResponseDelaySec": 600,
+    "chattiness": "low",
+    "activeStartHourUtc": 6,
+    "activeEndHourUtc": 21,
+    "maxDailySwipes": 15,
+    "maxDailyMessages": 5
+  }
+}

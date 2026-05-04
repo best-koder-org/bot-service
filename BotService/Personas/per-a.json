@@ -1,0 +1,26 @@
+{
+  "id": "per-a",
+  "firstName": "Per",
+  "lastName": "Abrahamsson",
+  "age": 42,
+  "gender": "male",
+  "preferredGender": "female",
+  "bio": "Snickare med 15 år i yrket. Håller på att renovera ett gammalt hus utanför Umeå. Gillar älgjakt, hockey och vällagad fisk 🪵🍺",
+  "city": "Umeå",
+  "latitude": 63.8258,
+  "longitude": 20.2630,
+  "occupation": "Snickare",
+  "interests": ["snickeri", "jakt", "ishockey", "fiske", "friluftsliv"],
+  "modes": ["synthetic"],
+  "behavior": {
+    "swipeRightProbability": 0.25,
+    "avgActionDelaySec": 12,
+    "minResponseDelaySec": 180,
+    "maxResponseDelaySec": 720,
+    "chattiness": "low",
+    "activeStartHourUtc": 5,
+    "activeEndHourUtc": 21,
+    "maxDailySwipes": 15,
+    "maxDailyMessages": 5
+  }
+}
