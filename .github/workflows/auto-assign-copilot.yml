@@ -1,0 +1,35 @@
+name: Auto-assign Copilot to new issues
+
+on:
+  issues:
+    types: [opened]
+
+permissions:
+  issues: write
+
+jobs:
+  assign:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Assign Copilot coding agent
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          ISSUE_NODE_ID: ${{ github.event.issue.node_id }}
+        run: |
+          gh api graphql -f query="
+            mutation {
+              addAssigneesToAssignable(input: {
+                assignableId: \"$ISSUE_NODE_ID\",
+                assigneeIds: [\"BOT_kgDOC9w8XQ\"]
+              }) {
+                assignable {
+                  ... on Issue {
+                    number
+                    assignees(first: 5) {
+                      nodes { login }
+                    }
+                  }
+                }
+              }
+            }
+          "
