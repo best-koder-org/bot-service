@@ -67,3 +67,26 @@ All config is in `bot_service/config.py`. Key environment defaults:
 | DASHBOARD_PORT | 9091 | Bot dashboard port |
 | DEFAULT_BOT_COUNT | 50 | Bots to seed |
 | SWIPE_RIGHT_PROBABILITY | 0.30 | Like rate |
+
+## Swedish Naturalness Benchmark
+
+The benchmark suite (`T366`) scores 100 bot-generated Swedish messages on naturalness, grammar, and persona consistency using an LLM judge. Each axis must average ≥ 3.5 / 5.
+
+**Run the benchmark:**
+
+```bash
+# Requires GROQ_API_KEY or GEMINI_API_KEY to be set
+export GROQ_API_KEY=your_key_here
+dotnet test BotService.Tests --filter Category=Benchmark
+```
+
+**Normal CI (no key required):** The benchmark test is automatically skipped when no API key is present, so `dotnet test BotService.Tests` always passes in CI without keys.
+
+**CI with benchmark enabled:**
+
+```yaml
+- name: Run benchmark
+  env:
+    GROQ_API_KEY: ${{ secrets.GROQ_API_KEY }}
+  run: dotnet test BotService.Tests --filter Category=Benchmark
+```
