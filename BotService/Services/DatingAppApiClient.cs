@@ -58,7 +58,7 @@ public class DatingAppApiClient
         var birthYear = DateTime.UtcNow.Year - persona.Age;
         var payload = new
         {
-            name = $"{persona.FirstName} {persona.LastName}",
+            name = persona.FirstName,
             email = $"bot_{persona.Id}@bot.local",
             bio = persona.Bio,
             gender = persona.Gender,
@@ -249,7 +249,13 @@ public class DatingAppApiClient
     public async Task<string?> GetKeycloakIdForProfileAsync(int profileId, string token, CancellationToken ct)
     {
         var result = await GetAsync($"{_endpoints.UserService}/api/UserProfiles/{profileId}", token, ct);
-        if (result == null) return null;
+        if (result == null)
+        {
+            _logger.LogWarning(
+                "GetKeycloakIdForProfile: UserService returned null/error for profileId={ProfileId}",
+                profileId);
+            return null;
+        }
 
         // Unwrap {success, data: {...}} envelope
         var profile = result.Value;
@@ -264,13 +270,16 @@ public class DatingAppApiClient
                 return kcId;
         }
 
+        _logger.LogWarning(
+            "GetKeycloakIdForProfile: profileId={ProfileId} response missing/empty keycloakId — bot cannot send messages to this user",
+            profileId);
         return null;
     }
 
     // ─── Photo Upload ──────────────────────────────────────────
 
-    /// <summary>Upload a profile photo for the authenticated bot user</summary>
-    public async Task<bool> UploadPhotoAsync(byte[] imageBytes, string fileName, string token, CancellationToken ct)
+    /// <summary>Upload a profile photo for the authenticated bot user. Returns photo ID or null on failure.</summary>
+    public async Task<int?> UploadPhotoAsync(byte[] imageBytes, string fileName, string token, CancellationToken ct)
     {
         try
         {
@@ -290,18 +299,43 @@ public class DatingAppApiClient
             var response = await _http.SendAsync(request, ct);
             if (response.IsSuccessStatusCode)
             {
-                _logger.LogInformation("Photo uploaded successfully for bot");
-                return true;
+                var body = await response.Content.ReadAsStringAsync(ct);
+                try
+                {
+                    var doc = JsonDocument.Parse(body);
+                    if (doc.RootElement.TryGetProperty("photo", out var photoProp) &&
+                        photoProp.TryGetProperty("id", out var idProp))
+                        return idProp.GetInt32();
+                    if (doc.RootElement.TryGetProperty("Photo", out var photoProp2) &&
+                        photoProp2.TryGetProperty("Id", out var idProp2))
+                        return idProp2.GetInt32();
+                }
+                catch { /* parse failed, still success */ }
+                _logger.LogInformation("Photo uploaded successfully for bot (could not parse ID)");
+                return -1; // uploaded but no ID parsed
             }
 
-            var body = await response.Content.ReadAsStringAsync(ct);
-            _logger.LogWarning("Photo upload failed: {Status} {Body}", response.StatusCode, body);
-            return false;
+            var errBody = await response.Content.ReadAsStringAsync(ct);
+            _logger.LogWarning("Photo upload failed: {Status} {Body}", response.StatusCode, errBody);
+            return null;
         }
         catch (Exception ex)
         {
             _logger.LogError(ex, "Photo upload exception");
-            return false;
+            return null;
+        }
+    }
+
+    /// <summary>Update a user profile (e.g. to set PrimaryPhotoUrl after photo upload)</summary>
+    public async Task UpdateProfileAsync(int profileId, object updatePayload, string token, CancellationToken ct)
+    {
+        try
+        {
+            await PutAsync($"{_endpoints.UserService}/api/UserProfiles/{profileId}", updatePayload, token, ct);
+        }
+        catch (Exception ex)
+        {
+            _logger.LogWarning(ex, "Failed to update profile {ProfileId}", profileId);
         }
     }
 
@@ -475,6 +509,34 @@ public class DatingAppApiClient
         {
             sw.Stop();
             _logger.LogError(ex, "POST {Url} failed", url);
+            return null;
+        }
+    }
+
+    private async Task<JsonElement?> PutAsync(string url, object payload, string token, CancellationToken ct)
+    {
+        try
+        {
+            var request = new HttpRequestMessage(HttpMethod.Put, url)
+            {
+                Content = new StringContent(
+                    JsonSerializer.Serialize(payload, JsonOpts), Encoding.UTF8, "application/json")
+            };
+            request.Headers.Authorization = new AuthenticationHeaderValue("Bearer", token);
+            var response = await _http.SendAsync(request, ct);
+            if (!response.IsSuccessStatusCode)
+            {
+                var body = await response.Content.ReadAsStringAsync(ct);
+                _logger.LogWarning("PUT {Url} returned {Status}: {Body}", url, response.StatusCode, body);
+                return null;
+            }
+            var json = await response.Content.ReadAsStringAsync(ct);
+            if (string.IsNullOrEmpty(json)) return JsonSerializer.Deserialize<JsonElement>("{}");
+            return JsonSerializer.Deserialize<JsonElement>(json, JsonOpts);
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError(ex, "PUT {Url} failed", url);
             return null;
         }
     }
