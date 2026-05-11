@@ -122,6 +122,26 @@ using (var scope = app.Services.CreateScope())
 {
     var db = scope.ServiceProvider.GetRequiredService<BotDbContext>();
     await db.Database.EnsureCreatedAsync();
+
+    // Idempotent additive migration for entities introduced after the initial
+    // EnsureCreated snapshot (we don't use EF migrations in this service).
+    await db.Database.ExecuteSqlRawAsync(@"
+CREATE TABLE IF NOT EXISTS ""UserFeedbacks"" (
+    ""Id"" INTEGER NOT NULL CONSTRAINT ""PK_UserFeedbacks"" PRIMARY KEY AUTOINCREMENT,
+    ""ReceivedAt"" TEXT NOT NULL,
+    ""AudioFilePath"" TEXT NULL,
+    ""DurationSec"" INTEGER NOT NULL,
+    ""SubmitterKeycloakId"" TEXT NULL,
+    ""Screen"" TEXT NULL,
+    ""NoteText"" TEXT NULL,
+    ""AppVersion"" TEXT NULL,
+    ""Transcript"" TEXT NULL,
+    ""ProcessedAt"" TEXT NULL
+);
+CREATE INDEX IF NOT EXISTS ""IX_UserFeedbacks_ReceivedAt"" ON ""UserFeedbacks"" (""ReceivedAt"");
+CREATE INDEX IF NOT EXISTS ""IX_UserFeedbacks_ProcessedAt"" ON ""UserFeedbacks"" (""ProcessedAt"");
+CREATE INDEX IF NOT EXISTS ""IX_UserFeedbacks_SubmitterKeycloakId"" ON ""UserFeedbacks"" (""SubmitterKeycloakId"");
+");
 }
 
 // Middleware

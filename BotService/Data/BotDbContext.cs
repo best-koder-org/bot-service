@@ -10,6 +10,7 @@ public class BotDbContext : DbContext
     public DbSet<BotState> BotStates { get; set; } = null!;
     public DbSet<BotFinding> BotFindings { get; set; } = null!;
     public DbSet<Experiment> Experiments { get; set; } = null!;
+    public DbSet<UserFeedback> UserFeedbacks { get; set; } = null!;
     
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
@@ -38,6 +39,14 @@ public class BotDbContext : DbContext
             entity.HasKey(e => e.Id);
             entity.HasIndex(e => e.Status);
             entity.Property(e => e.Status).HasConversion<string>();
+        });
+
+        modelBuilder.Entity<UserFeedback>(entity =>
+        {
+            entity.HasKey(e => e.Id);
+            entity.HasIndex(e => e.ReceivedAt);
+            entity.HasIndex(e => e.ProcessedAt);
+            entity.HasIndex(e => e.SubmitterKeycloakId);
         });
     }
 }
