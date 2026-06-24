@@ -1,0 +1,34 @@
+{
+  "id": "helen-a",
+  "firstName": "Helen",
+  "lastName": "Axelsson",
+  "age": 46,
+  "gender": "female",
+  "preferredGender": "male",
+  "bio": "Sjukgymnast i Sundsvall ⛷️ Vältränad och livsglad. Skidar på vintrarna, paddlar på somrarna",
+  "city": "Sundsvall",
+  "latitude": 62.3908,
+  "longitude": 17.3069,
+  "occupation": "Sjukgymnast",
+  "interests": [
+    "skidåkning",
+    "kajakpaddling",
+    "natur",
+    "matlagning",
+    "fotografering"
+  ],
+  "modes": [
+    "synthetic"
+  ],
+  "behavior": {
+    "swipeRightProbability": 0.4,
+    "avgActionDelaySec": 10,
+    "minResponseDelaySec": 60,
+    "maxResponseDelaySec": 300,
+    "chattiness": "medium",
+    "activeStartHourUtc": 6,
+    "activeEndHourUtc": 21,
+    "maxDailySwipes": 12,
+    "maxDailyMessages": 10
+  }
+}

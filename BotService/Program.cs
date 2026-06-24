@@ -33,12 +33,20 @@ builder.Services.AddDbContext<BotDbContext>(options =>
     options.UseSqlite(builder.Configuration.GetConnectionString("BotDb") ?? "Data Source=bot-service.db"));
 
 // HTTP clients
-builder.Services.AddHttpClient<KeycloakBotProvisioner>();
-builder.Services.AddHttpClient<DatingAppApiClient>();
-builder.Services.AddHttpClient<GeminiLlmProvider>();
-builder.Services.AddHttpClient<GroqLlmProvider>();
-builder.Services.AddHttpClient<OllamaLlmProvider>();
-builder.Services.AddHttpClient(); // IHttpClientFactory for ChaosAgent
+Func<HttpMessageHandler> GetHandler = () => new SocketsHttpHandler
+{
+    PooledConnectionLifetime = TimeSpan.FromMinutes(2),
+    MaxConnectionsPerServer = 10,
+    PooledConnectionIdleTimeout = TimeSpan.FromSeconds(30)
+};
+
+builder.Services.AddHttpClient<KeycloakBotProvisioner>().ConfigurePrimaryHttpMessageHandler(GetHandler);
+builder.Services.AddHttpClient<DatingAppApiClient>().ConfigurePrimaryHttpMessageHandler(GetHandler);
+builder.Services.AddHttpClient<GeminiLlmProvider>().ConfigurePrimaryHttpMessageHandler(GetHandler);
+builder.Services.AddHttpClient<GroqLlmProvider>().ConfigurePrimaryHttpMessageHandler(GetHandler);
+builder.Services.AddHttpClient<OllamaLlmProvider>().ConfigurePrimaryHttpMessageHandler(GetHandler);
+builder.Services.AddHttpClient("").ConfigurePrimaryHttpMessageHandler(GetHandler); // IHttpClientFactory for ChaosAgent
+
 
 // Services
 builder.Services.AddSingleton<BotPersonaEngine>(sp =>
@@ -88,6 +96,11 @@ builder.Services.AddSingleton<IConversationEngine>(sp =>
 
 // ── Bot Observer (Wave 2) ──
 builder.Services.AddSingleton<BotService.Services.Observer.BotObserver>();
+builder.Services.AddSingleton<BotMetrics>();
+builder.Services.AddSingleton<BehaviorLearningService>();
+builder.Services.AddSingleton<BotService.Services.Photo.PhotoStyleTracker>();
+builder.Services.AddSingleton<DynamicPersonaGenerator>();
+builder.Services.AddSingleton<IWebhookNotifier, WebhookNotifier>();
 
 // ── Swarm Orchestrator (Wave 3) ──
 builder.Services.AddSingleton<BotService.Services.Swarm.SwarmOrchestrator>();

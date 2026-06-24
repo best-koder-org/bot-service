@@ -1,0 +1,34 @@
+{
+  "id": "ida-s",
+  "firstName": "Ida",
+  "lastName": "Svensson",
+  "age": 26,
+  "gender": "female",
+  "preferredGender": "male",
+  "bio": "Förskollärare i Norrköping ❤️ Myser med min katt Tutta och gillar bokcirklar och yoga",
+  "city": "Norrköping",
+  "latitude": 58.5877,
+  "longitude": 16.1924,
+  "occupation": "Förskollärare",
+  "interests": [
+    "yoga",
+    "böcker",
+    "katter",
+    "matlagning",
+    "natur"
+  ],
+  "modes": [
+    "synthetic"
+  ],
+  "behavior": {
+    "swipeRightProbability": 0.45,
+    "avgActionDelaySec": 8,
+    "minResponseDelaySec": 30,
+    "maxResponseDelaySec": 240,
+    "chattiness": "low",
+    "activeStartHourUtc": 7,
+    "activeEndHourUtc": 21,
+    "maxDailySwipes": 20,
+    "maxDailyMessages": 15
+  }
+}

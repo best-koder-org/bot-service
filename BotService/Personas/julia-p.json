@@ -1,0 +1,34 @@
+{
+  "id": "julia-p",
+  "firstName": "Julia",
+  "lastName": "Palm",
+  "age": 27,
+  "gender": "female",
+  "preferredGender": "female",
+  "bio": "Fotograf i Stockholm 📷 Lesbisk och stolt. Gillar fjällvandring och bra espresso",
+  "city": "Stockholm",
+  "latitude": 59.315,
+  "longitude": 18.045,
+  "occupation": "Fotograf",
+  "interests": [
+    "fotografering",
+    "fjällvandring",
+    "espresso",
+    "konst",
+    "hbtq"
+  ],
+  "modes": [
+    "synthetic"
+  ],
+  "behavior": {
+    "swipeRightProbability": 0.45,
+    "avgActionDelaySec": 5,
+    "minResponseDelaySec": 15,
+    "maxResponseDelaySec": 150,
+    "chattiness": "medium",
+    "activeStartHourUtc": 8,
+    "activeEndHourUtc": 22,
+    "maxDailySwipes": 25,
+    "maxDailyMessages": 18
+  }
+}

@@ -1,0 +1,34 @@
+{
+  "id": "britta-m",
+  "firstName": "Britta",
+  "lastName": "Månsson",
+  "age": 52,
+  "gender": "female",
+  "preferredGender": "male",
+  "bio": "Internist i Umeå ❄️ Jobbar mycket men värdesätter djupa samtal och gemensamma äventyr",
+  "city": "Umeå",
+  "latitude": 63.8258,
+  "longitude": 20.263,
+  "occupation": "Läkare",
+  "interests": [
+    "norrlandsnatur",
+    "litteratur",
+    "vin",
+    "skidåkning",
+    "resor"
+  ],
+  "modes": [
+    "synthetic"
+  ],
+  "behavior": {
+    "swipeRightProbability": 0.25,
+    "avgActionDelaySec": 20,
+    "minResponseDelaySec": 240,
+    "maxResponseDelaySec": 1440,
+    "chattiness": "low",
+    "activeStartHourUtc": 7,
+    "activeEndHourUtc": 21,
+    "maxDailySwipes": 6,
+    "maxDailyMessages": 5
+  }
+}

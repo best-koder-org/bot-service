@@ -5,19 +5,27 @@
   "age": 31,
   "gender": "male",
   "preferredGender": "female",
-  "bio": "Lärare i historia. Boknörd som gillar att vandra och spela gitarr vid lägerelden 📚🎸",
-  "city": "Linköping",
+  "bio": "L\u00e4rare i historia. Bokn\u00f6rd som gillar att vandra och spela gitarr vid l\u00e4gerelden \ud83d\udcda\ud83c\udfb8",
+  "city": "Link\u00f6ping",
   "latitude": 58.4108,
   "longitude": 15.6214,
-  "occupation": "Lärare",
-  "interests": ["historia", "böcker", "gitarr", "vandring", "film"],
-  "modes": ["synthetic"],
+  "occupation": "L\u00e4rare",
+  "interests": [
+    "historia",
+    "b\u00f6cker",
+    "gitarr",
+    "vandring",
+    "film"
+  ],
+  "modes": [
+    "synthetic"
+  ],
   "behavior": {
     "swipeRightProbability": 0.35,
     "avgActionDelaySec": 7,
     "minResponseDelaySec": 90,
     "maxResponseDelaySec": 360,
-    "chattiness": "medium",
+    "chattiness": "high",
     "activeStartHourUtc": 6,
     "activeEndHourUtc": 22,
     "maxDailySwipes": 25,

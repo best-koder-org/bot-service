@@ -1,0 +1,34 @@
+{
+  "id": "anders-j",
+  "firstName": "Anders",
+  "lastName": "Johansson",
+  "age": 44,
+  "gender": "male",
+  "preferredGender": "female",
+  "bio": "Arkitekt i Helsingborg 🏛️ Skild. Tycker om att resa, laga mat och se på film med djup",
+  "city": "Helsingborg",
+  "latitude": 56.049,
+  "longitude": 12.7,
+  "occupation": "Arkitekt",
+  "interests": [
+    "arkitektur",
+    "resor",
+    "film",
+    "matlagning",
+    "wine"
+  ],
+  "modes": [
+    "synthetic"
+  ],
+  "behavior": {
+    "swipeRightProbability": 0.35,
+    "avgActionDelaySec": 15,
+    "minResponseDelaySec": 90,
+    "maxResponseDelaySec": 480,
+    "chattiness": "medium",
+    "activeStartHourUtc": 8,
+    "activeEndHourUtc": 22,
+    "maxDailySwipes": 10,
+    "maxDailyMessages": 8
+  }
+}

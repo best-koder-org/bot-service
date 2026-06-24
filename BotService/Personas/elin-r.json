@@ -1,0 +1,34 @@
+{
+  "id": "elin-r",
+  "firstName": "Elin",
+  "lastName": "Roos",
+  "age": 30,
+  "gender": "female",
+  "preferredGender": "male",
+  "bio": "Bonde i Dalarna 🐄🌾 Mjölkar kor varje morgon. Söker en jordnära kille",
+  "city": "Falun",
+  "latitude": 60.6065,
+  "longitude": 15.6355,
+  "occupation": "Lantbrukare",
+  "interests": [
+    "natur",
+    "djur",
+    "friluftsliv",
+    "matlagning",
+    "hantverk"
+  ],
+  "modes": [
+    "synthetic"
+  ],
+  "behavior": {
+    "swipeRightProbability": 0.4,
+    "avgActionDelaySec": 15,
+    "minResponseDelaySec": 60,
+    "maxResponseDelaySec": 480,
+    "chattiness": "low",
+    "activeStartHourUtc": 5,
+    "activeEndHourUtc": 20,
+    "maxDailySwipes": 10,
+    "maxDailyMessages": 6
+  }
+}

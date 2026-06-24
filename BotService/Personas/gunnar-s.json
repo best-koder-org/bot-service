@@ -1,0 +1,34 @@
+{
+  "id": "gunnar-s",
+  "firstName": "Gunnar",
+  "lastName": "Strand",
+  "age": 57,
+  "gender": "male",
+  "preferredGender": "female",
+  "bio": "Pensionerad polis i Umeå ❄️ Lugn men vaken. Söker tryggt sällskap för livsresan",
+  "city": "Umeå",
+  "latitude": 63.83,
+  "longitude": 20.27,
+  "occupation": "Pensionär (fd polis)",
+  "interests": [
+    "fiske",
+    "natur",
+    "historia",
+    "trädgård",
+    "schack"
+  ],
+  "modes": [
+    "synthetic"
+  ],
+  "behavior": {
+    "swipeRightProbability": 0.2,
+    "avgActionDelaySec": 30,
+    "minResponseDelaySec": 480,
+    "maxResponseDelaySec": 1440,
+    "chattiness": "low",
+    "activeStartHourUtc": 8,
+    "activeEndHourUtc": 20,
+    "maxDailySwipes": 3,
+    "maxDailyMessages": 2
+  }
+}

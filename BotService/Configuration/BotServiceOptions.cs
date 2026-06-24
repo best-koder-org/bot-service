@@ -30,6 +30,9 @@ public class BotServiceOptions
     
     /// <summary>Observer/reporter settings</summary>
     public ObserverOptions Observer { get; set; } = new();
+    
+    /// <summary>Webhook notification config</summary>
+    public WebhookOptions Webhook { get; set; } = new();
 }
 
 public class KeycloakOptions
@@ -51,6 +54,8 @@ public class ServiceEndpoints
     public string PhotoService { get; set; } = "http://localhost:8085";
     public string MessagingHub { get; set; } = "http://localhost:8086/messagingHub";
     public string SafetyService { get; set; } = "http://localhost:8088";
+    /// <summary>Internal API key for service-to-service calls (X-Internal-API-Key header)</summary>
+    public string InternalApiKey { get; set; } = "";
 }
 
 public class BotModeOptions

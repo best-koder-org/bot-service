@@ -4,6 +4,7 @@ using BotService.Models;
 using BotService.Services.Observer;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
+using BotService.Services;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 using Moq;
@@ -29,7 +30,7 @@ public class FindingsControllerTests : IDisposable
         services.AddLogging();
         var sp = services.BuildServiceProvider();
 
-        _observer = new BotObserver(sp, sp.GetRequiredService<ILoggerFactory>().CreateLogger<BotObserver>());
+        _observer = new BotObserver(sp, sp.GetRequiredService<ILoggerFactory>().CreateLogger<BotObserver>(), Mock.Of<IWebhookNotifier>() );
         _controller = new FindingsController(_observer, _db, new Mock<ILogger<FindingsController>>().Object);
     }
 

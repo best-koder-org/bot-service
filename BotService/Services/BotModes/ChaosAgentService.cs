@@ -122,7 +122,7 @@ public class ChaosAgentService : BackgroundService
         var cases = new[]
         {
             ("POST", $"{ep.SwipeService}/api/Swipes", "{}"),
-            ("POST", $"{ep.SwipeService}/api/Swipes", "{\"userId\": -1, \"targetUserId\": -1, \"isLike\": \"maybe\"}"),
+            ("POST", $"{ep.SwipeService}/api/Swipes", "{\"userId\": -1, \"targetUserId\": \"-1\", \"isLike\": \"maybe\"}"),
             ("POST", $"{ep.MessagingService}/api/Messages", "{\"receiverId\": \"\", \"content\": \"\"}"),
             ("POST", $"{ep.UserService}/api/UserProfiles", "{\"name\": \"\"}"),
         };
@@ -162,7 +162,7 @@ public class ChaosAgentService : BackgroundService
             var payload = JsonSerializer.Serialize(new
             {
                 userId = bot.ProfileId,
-                targetUserId = 99999 + i,
+                targetUserId = (99999 + i).ToString(),
                 isLike = true,
                 idempotencyKey = Guid.NewGuid().ToString()
             });
@@ -230,7 +230,7 @@ public class ChaosAgentService : BackgroundService
         var payload = JsonSerializer.Serialize(new
         {
             userId = bot.ProfileId,
-            targetUserId = 99999,
+            targetUserId = "99999",
             isLike = true,
             idempotencyKey
         });

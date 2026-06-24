@@ -1,0 +1,34 @@
+{
+  "id": "viktor-h",
+  "firstName": "Viktor",
+  "lastName": "Holm",
+  "age": 27,
+  "gender": "male",
+  "preferredGender": "female",
+  "bio": "Kock i Malmö 🍳 Jobbar kvällar, ledig på dagarna. Älskar att laga och äta mat (förstås)",
+  "city": "Malmö",
+  "latitude": 55.61,
+  "longitude": 13.01,
+  "occupation": "Kock",
+  "interests": [
+    "matlagning",
+    "vin",
+    "löpning",
+    "podcasts",
+    "fotografi"
+  ],
+  "modes": [
+    "synthetic"
+  ],
+  "behavior": {
+    "swipeRightProbability": 0.5,
+    "avgActionDelaySec": 5,
+    "minResponseDelaySec": 20,
+    "maxResponseDelaySec": 120,
+    "chattiness": "medium",
+    "activeStartHourUtc": 12,
+    "activeEndHourUtc": 3,
+    "maxDailySwipes": 30,
+    "maxDailyMessages": 20
+  }
+}

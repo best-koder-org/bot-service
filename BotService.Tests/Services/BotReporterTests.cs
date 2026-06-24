@@ -1,6 +1,7 @@
 using BotService.Configuration;
 using BotService.Data;
 using BotService.Models;
+using BotService.Services;
 using BotService.Services.Observer;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.DependencyInjection;
@@ -22,6 +23,7 @@ public class BotReporterTests : IDisposable
         var services = new ServiceCollection();
         services.AddDbContext<BotDbContext>(o => o.UseInMemoryDatabase(_dbName));
         services.AddSingleton<BotObserver>();
+        services.AddSingleton(Mock.Of<IWebhookNotifier>());
         services.AddSingleton(new Mock<ILogger<BotObserver>>().Object);
         
         _sp = services.BuildServiceProvider();

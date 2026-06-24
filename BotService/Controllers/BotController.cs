@@ -15,17 +15,20 @@ public class BotController : ControllerBase
     private readonly BotDbContext _db;
     private readonly IOptionsMonitor<BotServiceOptions> _config;
     private readonly BotPersonaEngine _personaEngine;
+    private readonly DynamicPersonaGenerator _personaGenerator;
     private readonly ILogger<BotController> _logger;
 
     public BotController(
         BotDbContext db,
         IOptionsMonitor<BotServiceOptions> config,
         BotPersonaEngine personaEngine,
+        DynamicPersonaGenerator personaGenerator,
         ILogger<BotController> logger)
     {
         _db = db;
         _config = config;
         _personaEngine = personaEngine;
+        _personaGenerator = personaGenerator;
         _logger = logger;
     }
 
@@ -126,6 +129,36 @@ public class BotController : ControllerBase
         }));
     }
 
+    /// <summary>Generate a new persona via LLM</summary>
+    [HttpPost("personas/generate")]
+    public async Task<IActionResult> GeneratePersona([FromBody] GeneratePersonaRequest request)
+    {
+        if (string.IsNullOrWhiteSpace(request.AgeRange) ||
+            string.IsNullOrWhiteSpace(request.Gender) ||
+            string.IsNullOrWhiteSpace(request.City))
+            return BadRequest(new { error = "ageRange, gender, and city are required." });
+
+        var persona = await _personaGenerator.GenerateAsync(
+            request.AgeRange, request.Gender, request.City,
+            request.Interests ?? new List<string>());
+
+        if (persona == null)
+            return StatusCode(500, new { error = "Failed to generate persona. Check LLM service availability." });
+
+        return Ok(new
+        {
+            persona.Id,
+            persona.FirstName,
+            persona.LastName,
+            persona.Age,
+            persona.Gender,
+            persona.City,
+            persona.Occupation,
+            persona.Bio,
+            persona.Interests,
+        });
+    }
+
     /// <summary>Pause a specific bot</summary>
     [HttpPost("pause/{personaId}")]
     public async Task<IActionResult> PauseBot(string personaId)
@@ -218,3 +251,10 @@ public class BotController : ControllerBase
         return Ok(new { message = $"Bot '{personaId}' deleted" });
     }
 }
+
+/// <summary>Request DTO for T364 dynamic persona generation.</summary>
+public record GeneratePersonaRequest(
+    string AgeRange,
+    string Gender,
+    string City,
+    List<string>? Interests = null);

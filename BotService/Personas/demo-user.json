@@ -5,28 +5,39 @@
   "age": 29,
   "gender": "male",
   "preferredGender": "female",
-  "bio": "Dev mode test user. Loves coding, coffee, and long walks through log files 🖥️☕",
+  "bio": "Dev mode test user. Loves coding, coffee, and long walks through log files \ud83d\udda5\ufe0f\u2615",
   "city": "Stockholm",
   "latitude": 59.3293,
   "longitude": 18.0686,
   "occupation": "Software Developer",
   "education": "KTH Royal Institute of Technology",
-  "interests": ["programming", "gaming", "coffee", "music", "hiking"],
-  "languages": ["Svenska", "English"],
+  "interests": [
+    "programming",
+    "gaming",
+    "coffee",
+    "music",
+    "hiking"
+  ],
+  "languages": [
+    "Svenska",
+    "English"
+  ],
   "smokingStatus": "Never",
   "drinkingStatus": "Socially",
   "relationshipType": "Long-term relationship",
   "height": 182,
-  "modes": ["demo"],
+  "modes": [
+    "demo"
+  ],
   "behavior": {
     "swipeRightProbability": 0,
     "avgActionDelaySec": 0,
     "minResponseDelaySec": 0,
     "maxResponseDelaySec": 0,
-    "chattiness": "low",
+    "chattiness": "high",
     "activeStartHourUtc": 0,
     "activeEndHourUtc": 23,
     "maxDailySwipes": 0,
-    "maxDailyMessages": 0
+    "maxDailyMessages": 500
   }
 }

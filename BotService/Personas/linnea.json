@@ -10,17 +10,27 @@
   "latitude": 59.8586,
   "longitude": 17.6389,
   "occupation": "Grafisk designer",
-  "interests": ["konst", "akvarell", "kaffe", "katter", "design"],
-  "modes": ["synthetic", "warmup"],
+  "interests": [
+    "konst",
+    "akvarell",
+    "kaffe",
+    "katter",
+    "design"
+  ],
+  "modes": [
+    "synthetic",
+    "warmup"
+  ],
   "behavior": {
     "swipeRightProbability": 0.3,
     "avgActionDelaySec": 6,
     "minResponseDelaySec": 60,
     "maxResponseDelaySec": 240,
-    "chattiness": "medium",
+    "chattiness": "high",
     "activeStartHourUtc": 9,
     "activeEndHourUtc": 23,
     "maxDailySwipes": 35,
-    "maxDailyMessages": 15
-  }
+    "maxDailyMessages": 500
+  },
+  "maxDailyMessages": 20
 }

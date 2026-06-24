@@ -1,0 +1,34 @@
+{
+  "id": "per-a",
+  "firstName": "Per",
+  "lastName": "Ahl",
+  "age": 42,
+  "gender": "male",
+  "preferredGender": "female",
+  "bio": "Skogsarbetare i Norrland 🌲 Tyst av mig men varm. Gillar friluftsliv och riktiga middagar",
+  "city": "Östersund",
+  "latitude": 63.1792,
+  "longitude": 14.6357,
+  "occupation": "Skogsarbetare",
+  "interests": [
+    "jakt",
+    "fiske",
+    "natur",
+    "snöskoter",
+    "matlagning"
+  ],
+  "modes": [
+    "synthetic"
+  ],
+  "behavior": {
+    "swipeRightProbability": 0.35,
+    "avgActionDelaySec": 20,
+    "minResponseDelaySec": 120,
+    "maxResponseDelaySec": 720,
+    "chattiness": "low",
+    "activeStartHourUtc": 6,
+    "activeEndHourUtc": 20,
+    "maxDailySwipes": 8,
+    "maxDailyMessages": 5
+  }
+}

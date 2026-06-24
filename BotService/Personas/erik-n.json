@@ -1,0 +1,34 @@
+{
+  "id": "erik-n",
+  "firstName": "Erik",
+  "lastName": "Nordqvist",
+  "age": 33,
+  "gender": "male",
+  "preferredGender": "female",
+  "bio": "Journalist i Stockholm ✍️ Skriver om tech och samhälle. Debatterar gärna men respekterar andras åsikter",
+  "city": "Stockholm",
+  "latitude": 59.318,
+  "longitude": 18.05,
+  "occupation": "Journalist",
+  "interests": [
+    "politik",
+    "teknik",
+    "löpning",
+    "böcker",
+    "vin"
+  ],
+  "modes": [
+    "synthetic"
+  ],
+  "behavior": {
+    "swipeRightProbability": 0.4,
+    "avgActionDelaySec": 8,
+    "minResponseDelaySec": 30,
+    "maxResponseDelaySec": 240,
+    "chattiness": "medium",
+    "activeStartHourUtc": 8,
+    "activeEndHourUtc": 23,
+    "maxDailySwipes": 20,
+    "maxDailyMessages": 18
+  }
+}

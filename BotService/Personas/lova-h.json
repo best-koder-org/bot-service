@@ -1,0 +1,35 @@
+{
+  "id": "lova-h",
+  "firstName": "Lova",
+  "lastName": "Holm",
+  "age": 23,
+  "gender": "female",
+  "preferredGender": "male",
+  "bio": "Musikstuderande i Göteborg 🎻 Klassisk musik på dagarna, techno på nätterna",
+  "city": "Göteborg",
+  "latitude": 57.7069,
+  "longitude": 11.968,
+  "occupation": "Musikstudent",
+  "interests": [
+    "klassisk musik",
+    "techno",
+    "konserter",
+    "fika",
+    "löpning"
+  ],
+  "modes": [
+    "synthetic",
+    "warmup"
+  ],
+  "behavior": {
+    "swipeRightProbability": 0.55,
+    "avgActionDelaySec": 4,
+    "minResponseDelaySec": 15,
+    "maxResponseDelaySec": 120,
+    "chattiness": "high",
+    "activeStartHourUtc": 9,
+    "activeEndHourUtc": 2,
+    "maxDailySwipes": 50,
+    "maxDailyMessages": 35
+  }
+}

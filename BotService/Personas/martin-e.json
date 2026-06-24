@@ -1,0 +1,35 @@
+{
+  "id": "martin-e",
+  "firstName": "Martin",
+  "lastName": "Ekberg",
+  "age": 38,
+  "gender": "male",
+  "preferredGender": "female",
+  "bio": "Veterinär i Eskilstuna 🐾 Arbetar med lantdjur. Söker en som gillar att smutsa ner sig",
+  "city": "Eskilstuna",
+  "latitude": 59.3666,
+  "longitude": 16.5077,
+  "occupation": "Veterinär",
+  "interests": [
+    "djur",
+    "natur",
+    "mountainbike",
+    "matlagning",
+    "fotografering"
+  ],
+  "modes": [
+    "synthetic",
+    "warmup"
+  ],
+  "behavior": {
+    "swipeRightProbability": 0.45,
+    "avgActionDelaySec": 9,
+    "minResponseDelaySec": 40,
+    "maxResponseDelaySec": 300,
+    "chattiness": "medium",
+    "activeStartHourUtc": 6,
+    "activeEndHourUtc": 21,
+    "maxDailySwipes": 15,
+    "maxDailyMessages": 12
+  }
+}

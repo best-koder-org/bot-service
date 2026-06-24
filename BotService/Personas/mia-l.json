@@ -1,0 +1,34 @@
+{
+  "id": "mia-l",
+  "firstName": "Mia",
+  "lastName": "Lindgren",
+  "age": 31,
+  "gender": "female",
+  "preferredGender": "male",
+  "bio": "IT-konsult i Västerås. Spelkörd nerd som också gillar friluftsliv 🏕️🎮",
+  "city": "Västerås",
+  "latitude": 59.6099,
+  "longitude": 16.5448,
+  "occupation": "IT-konsult",
+  "interests": [
+    "gaming",
+    "friluftsliv",
+    "programmering",
+    "böcker",
+    "mountainbike"
+  ],
+  "modes": [
+    "synthetic"
+  ],
+  "behavior": {
+    "swipeRightProbability": 0.45,
+    "avgActionDelaySec": 5,
+    "minResponseDelaySec": 20,
+    "maxResponseDelaySec": 150,
+    "chattiness": "medium",
+    "activeStartHourUtc": 8,
+    "activeEndHourUtc": 23,
+    "maxDailySwipes": 30,
+    "maxDailyMessages": 20
+  }
+}

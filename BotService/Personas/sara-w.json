@@ -1,0 +1,34 @@
+{
+  "id": "sara-w",
+  "firstName": "Sara",
+  "lastName": "Winther",
+  "age": 34,
+  "gender": "female",
+  "preferredGender": "male",
+  "bio": "Grafisk formgivare i Helsingborg. Singelmamma till en underbar 4-åring 🎨👧",
+  "city": "Helsingborg",
+  "latitude": 56.0465,
+  "longitude": 12.6945,
+  "occupation": "Grafisk formgivare",
+  "interests": [
+    "design",
+    "barnaktiviteter",
+    "yoga",
+    "matlagning",
+    "serier"
+  ],
+  "modes": [
+    "synthetic"
+  ],
+  "behavior": {
+    "swipeRightProbability": 0.3,
+    "avgActionDelaySec": 12,
+    "minResponseDelaySec": 90,
+    "maxResponseDelaySec": 480,
+    "chattiness": "medium",
+    "activeStartHourUtc": 8,
+    "activeEndHourUtc": 22,
+    "maxDailySwipes": 15,
+    "maxDailyMessages": 10
+  }
+}

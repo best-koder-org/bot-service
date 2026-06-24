@@ -37,7 +37,7 @@ public class LoadTestModeTests : IDisposable
         services.AddLogging();
 
         _sp = services.BuildServiceProvider();
-        _observer = new BotObserver(_sp, Mock.Of<ILogger<BotObserver>>());
+        _observer = new BotObserver(_sp, Mock.Of<ILogger<BotObserver>>(), Mock.Of<IWebhookNotifier>());
         _mode = new LoadTestMode(_sp, _observer, Mock.Of<ILogger<LoadTestMode>>());
     }
 

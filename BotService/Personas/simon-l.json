@@ -1,0 +1,35 @@
+{
+  "id": "simon-l",
+  "firstName": "Simon",
+  "lastName": "Larsson",
+  "age": 24,
+  "gender": "male",
+  "preferredGender": "female",
+  "bio": "Musiker och bartender i Uppsala 🎸🍹 Spontan och nyfiken. Älskar jazzklubbarna",
+  "city": "Uppsala",
+  "latitude": 59.855,
+  "longitude": 17.635,
+  "occupation": "Musiker/Bartender",
+  "interests": [
+    "jazz",
+    "gitarr",
+    "bartending",
+    "resor",
+    "filosofi"
+  ],
+  "modes": [
+    "synthetic",
+    "warmup"
+  ],
+  "behavior": {
+    "swipeRightProbability": 0.6,
+    "avgActionDelaySec": 3,
+    "minResponseDelaySec": 8,
+    "maxResponseDelaySec": 60,
+    "chattiness": "high",
+    "activeStartHourUtc": 12,
+    "activeEndHourUtc": 3,
+    "maxDailySwipes": 60,
+    "maxDailyMessages": 45
+  }
+}

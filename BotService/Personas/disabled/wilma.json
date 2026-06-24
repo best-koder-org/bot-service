@@ -5,19 +5,27 @@
   "age": 30,
   "gender": "female",
   "preferredGender": "male",
-  "bio": "Product manager på Spotify. Musikälskare, vinylsamlare, och amatörkock 🎵🍳",
+  "bio": "Product manager p\u00e5 Spotify. Musik\u00e4lskare, vinylsamlare, och amat\u00f6rkock \ud83c\udfb5\ud83c\udf73",
   "city": "Stockholm",
   "latitude": 59.3325,
   "longitude": 18.0649,
   "occupation": "Product Manager",
-  "interests": ["musik", "vinyl", "matlagning", "podcasts", "yoga"],
-  "modes": ["synthetic"],
+  "interests": [
+    "musik",
+    "vinyl",
+    "matlagning",
+    "podcasts",
+    "yoga"
+  ],
+  "modes": [
+    "synthetic"
+  ],
   "behavior": {
     "swipeRightProbability": 0.3,
     "avgActionDelaySec": 8,
     "minResponseDelaySec": 120,
     "maxResponseDelaySec": 480,
-    "chattiness": "low",
+    "chattiness": "high",
     "activeStartHourUtc": 8,
     "activeEndHourUtc": 22,
     "maxDailySwipes": 20,

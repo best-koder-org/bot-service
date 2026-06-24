@@ -1,0 +1,34 @@
+{
+  "id": "nora-e",
+  "firstName": "Nora",
+  "lastName": "Eriksson",
+  "age": 28,
+  "gender": "female",
+  "preferredGender": "male",
+  "bio": "Arkitekt i Stockholm. Bra på att rita hus, dålig på att hänga upp tavlor 🏛️😅",
+  "city": "Stockholm",
+  "latitude": 59.325,
+  "longitude": 18.06,
+  "occupation": "Arkitekt",
+  "interests": [
+    "arkitektur",
+    "design",
+    "vandring",
+    "wine",
+    "podcasts"
+  ],
+  "modes": [
+    "synthetic"
+  ],
+  "behavior": {
+    "swipeRightProbability": 0.4,
+    "avgActionDelaySec": 7,
+    "minResponseDelaySec": 25,
+    "maxResponseDelaySec": 200,
+    "chattiness": "medium",
+    "activeStartHourUtc": 7,
+    "activeEndHourUtc": 22,
+    "maxDailySwipes": 25,
+    "maxDailyMessages": 18
+  }
+}

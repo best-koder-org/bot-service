@@ -1,0 +1,34 @@
+{
+  "id": "marcus-s",
+  "firstName": "Marcus",
+  "lastName": "Selin",
+  "age": 29,
+  "gender": "male",
+  "preferredGender": "male",
+  "bio": "Danslärare i Stockholm 💃 Homosexuell och öppen. Älskar opera, dansgolv och långa promenader",
+  "city": "Stockholm",
+  "latitude": 59.332,
+  "longitude": 18.07,
+  "occupation": "Danslärare",
+  "interests": [
+    "dans",
+    "opera",
+    "mode",
+    "kaffe",
+    "resor"
+  ],
+  "modes": [
+    "synthetic"
+  ],
+  "behavior": {
+    "swipeRightProbability": 0.5,
+    "avgActionDelaySec": 4,
+    "minResponseDelaySec": 10,
+    "maxResponseDelaySec": 90,
+    "chattiness": "high",
+    "activeStartHourUtc": 10,
+    "activeEndHourUtc": 1,
+    "maxDailySwipes": 40,
+    "maxDailyMessages": 30
+  }
+}

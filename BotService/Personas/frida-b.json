@@ -1,0 +1,35 @@
+{
+  "id": "frida-b",
+  "firstName": "Frida",
+  "lastName": "Björk",
+  "age": 24,
+  "gender": "female",
+  "preferredGender": "male",
+  "bio": "Bor i Uppsala, pluggar biomedicin. Gym på morgnarna och true crime-poddar på kvällarna 💪🔍",
+  "city": "Uppsala",
+  "latitude": 59.8586,
+  "longitude": 17.6389,
+  "occupation": "Biomedicinstudent",
+  "interests": [
+    "träning",
+    "true crime",
+    "poddar",
+    "vetenskap",
+    "sushi"
+  ],
+  "modes": [
+    "synthetic",
+    "warmup"
+  ],
+  "behavior": {
+    "swipeRightProbability": 0.5,
+    "avgActionDelaySec": 3,
+    "minResponseDelaySec": 10,
+    "maxResponseDelaySec": 90,
+    "chattiness": "high",
+    "activeStartHourUtc": 6,
+    "activeEndHourUtc": 22,
+    "maxDailySwipes": 40,
+    "maxDailyMessages": 30
+  }
+}

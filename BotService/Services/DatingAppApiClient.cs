@@ -1,4 +1,5 @@
 using System.Diagnostics;
+using System.Collections.Generic;
 using System.Net.Http.Headers;
 using System.Text;
 using System.Text.Json;
@@ -109,6 +110,46 @@ public class DatingAppApiClient
         return null;
     }
 
+    /// <summary>Provision a bot profile via POST /api/bot/provision (JWT-authenticated, idempotent)</summary>
+    public async Task<(int? ProfileId, bool Created)> ProvisionBotAsync(string token, BotPersona persona, CancellationToken ct)
+    {
+        var payload = new
+        {
+            name = persona.FirstName,
+            email = $"bot_{persona.Id}@bot.local",
+            age = persona.Age,
+            bio = persona.Bio,
+            gender = persona.Gender,
+            preferences = persona.PreferredGender,
+            city = persona.City,
+            occupation = persona.Occupation,
+            education = persona.Education,
+            interests = persona.Interests,
+            languages = persona.Languages,
+            height = persona.Height,
+            smokingStatus = persona.SmokingStatus,
+            drinkingStatus = persona.DrinkingStatus,
+            relationshipType = persona.RelationshipType
+        };
+
+        var response = await PostAsync($"{_endpoints.UserService}/api/bot/provision", payload, token, ct);
+
+        if (response == null) return (null, false);
+
+        // Unwrap {success, data: {profileId, keycloakId, created}} envelope
+        if (response.Value.TryGetProperty("data", out var dataProp) && dataProp.ValueKind == JsonValueKind.Object)
+        {
+            var profileId = dataProp.TryGetProperty("profileId", out var pid) && pid.ValueKind == JsonValueKind.Number
+                ? pid.GetInt32() : (int?)null;
+            var created = dataProp.TryGetProperty("created", out var c) && c.GetBoolean();
+            return (profileId, created);
+        }
+
+        _logger.LogWarning("Could not parse bot provision response for {Id}: {Response}",
+            persona.Id, response.Value.ToString()[..Math.Min(200, response.Value.ToString().Length)]);
+        return (null, false);
+    }
+
     /// <summary>Get own profile via GET /api/profiles/me (unwraps {success, data} envelope)</summary>
     public async Task<JsonElement?> GetMyProfileAsync(string token, CancellationToken ct)
     {
@@ -145,12 +186,16 @@ public class DatingAppApiClient
         var payload = new
         {
             userId = fromProfileId,
-            targetUserId = targetProfileId,
+            targetUserId = targetProfileId.ToString(),
             isLike,
             idempotencyKey = Guid.NewGuid().ToString()
         };
-        
-        var result = await PostAsync($"{_endpoints.SwipeService}/api/Swipes", payload, token, ct);
+        var headers = new Dictionary<string, string>
+        {
+            ["X-Bot-ProfileId"] = fromProfileId.ToString()
+        };
+
+        var result = await PostAsync($"{_endpoints.SwipeService}/api/Swipes", payload, token, ct, headers);
         if (result == null) return (false, false);
         
         var isMutual = result.Value.TryGetProperty("isMutualMatch", out var matchProp)
@@ -433,9 +478,10 @@ public class DatingAppApiClient
                 await _observer.ObserveApiCall(DetectService(url), url, statusCode, sw.ElapsedMilliseconds,
                     _currentBotPersona, _currentBotUserId);
             
-            var json = await response.Content.ReadAsStringAsync(ct);
-            if (string.IsNullOrEmpty(json)) return null;
-            return JsonSerializer.Deserialize<JsonElement>(json, JsonOpts);
+            try {
+                using var stream = await response.Content.ReadAsStreamAsync(ct);
+                return await JsonSerializer.DeserializeAsync<JsonElement>(stream, JsonOpts, ct);
+            } catch { return null; }
         }
         catch (TaskCanceledException) when (!ct.IsCancellationRequested)
         {
@@ -457,7 +503,7 @@ public class DatingAppApiClient
         }
     }
 
-    private async Task<JsonElement?> PostAsync(string url, object payload, string token, CancellationToken ct)
+    private async Task<JsonElement?> PostAsync(string url, object payload, string token, CancellationToken ct, IDictionary<string,string>? extraHeaders = null)
     {
         var sw = Stopwatch.StartNew();
         try
@@ -468,6 +514,13 @@ public class DatingAppApiClient
                     JsonSerializer.Serialize(payload, JsonOpts), Encoding.UTF8, "application/json")
             };
             request.Headers.Authorization = new AuthenticationHeaderValue("Bearer", token);
+            if (extraHeaders != null)
+            {
+                foreach (var kv in extraHeaders)
+                {
+                    try { request.Headers.TryAddWithoutValidation(kv.Key, kv.Value); } catch { }
+                }
+            }
             
             var response = await _http.SendAsync(request, ct);
             sw.Stop();
@@ -489,9 +542,10 @@ public class DatingAppApiClient
                 await _observer.ObserveApiCall(DetectService(url), url, statusCode, sw.ElapsedMilliseconds,
                     _currentBotPersona, _currentBotUserId);
             
-            var json = await response.Content.ReadAsStringAsync(ct);
-            if (string.IsNullOrEmpty(json)) return JsonSerializer.Deserialize<JsonElement>("{}");
-            return JsonSerializer.Deserialize<JsonElement>(json, JsonOpts);
+            try {
+                using var stream = await response.Content.ReadAsStreamAsync(ct);
+                return await JsonSerializer.DeserializeAsync<JsonElement>(stream, JsonOpts, ct);
+            } catch { return JsonSerializer.Deserialize<JsonElement>("{}"); }
         }
         catch (TaskCanceledException) when (!ct.IsCancellationRequested)
         {
@@ -530,9 +584,10 @@ public class DatingAppApiClient
                 _logger.LogWarning("PUT {Url} returned {Status}: {Body}", url, response.StatusCode, body);
                 return null;
             }
-            var json = await response.Content.ReadAsStringAsync(ct);
-            if (string.IsNullOrEmpty(json)) return JsonSerializer.Deserialize<JsonElement>("{}");
-            return JsonSerializer.Deserialize<JsonElement>(json, JsonOpts);
+            try {
+                using var stream = await response.Content.ReadAsStreamAsync(ct);
+                return await JsonSerializer.DeserializeAsync<JsonElement>(stream, JsonOpts, ct);
+            } catch { return JsonSerializer.Deserialize<JsonElement>("{}"); }
         }
         catch (Exception ex)
         {

@@ -1,0 +1,34 @@
+{
+  "id": "robin-k",
+  "firstName": "Robin",
+  "lastName": "Kjell",
+  "age": 26,
+  "gender": "non-binary",
+  "preferredGender": "any",
+  "bio": "Tatuerare i Göteborg 🎨✨ Kreativ, queer och alltid på jakt efter nya upplevelser",
+  "city": "Göteborg",
+  "latitude": 57.7,
+  "longitude": 11.96,
+  "occupation": "Tatuerare",
+  "interests": [
+    "tatuering",
+    "queer kultur",
+    "musik",
+    "konst",
+    "djurrättigheter"
+  ],
+  "modes": [
+    "synthetic"
+  ],
+  "behavior": {
+    "swipeRightProbability": 0.5,
+    "avgActionDelaySec": 4,
+    "minResponseDelaySec": 15,
+    "maxResponseDelaySec": 120,
+    "chattiness": "medium",
+    "activeStartHourUtc": 10,
+    "activeEndHourUtc": 2,
+    "maxDailySwipes": 35,
+    "maxDailyMessages": 25
+  }
+}

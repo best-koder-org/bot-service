@@ -163,4 +163,59 @@ public class UserFeedbackControllerTests : IDisposable
         var file = Assert.IsType<FileStreamResult>(result);
         Assert.Equal("audio/aac", file.ContentType);
     }
+
+    [Fact]
+    public async Task List_FiltersAndReturnsUnprocessed()
+    {
+        _db.UserFeedbacks.AddRange(
+            new UserFeedback { Id = 0, NoteText = "unprocessed-1" },
+            new UserFeedback { Id = 0, NoteText = "processed", Transcript = "done", ProcessedAt = DateTime.UtcNow },
+            new UserFeedback { Id = 0, NoteText = "unprocessed-2" }
+        );
+        await _db.SaveChangesAsync();
+
+        var result = await _controller.List(unprocessed: true, since: null, page: 1, pageSize: 50);
+        var ok = Assert.IsType<OkObjectResult>(result);
+
+        var json = System.Text.Json.JsonSerializer.Serialize(ok.Value);
+        Assert.Contains("unprocessed-1", json);
+        Assert.Contains("unprocessed-2", json);
+        Assert.DoesNotContain("noteText\":\"processed\"", json);
+    }
+
+    [Fact]
+    public async Task PatchTranscript_SimulatesWatcherPipeline()
+    {
+        // Step 1: Submit audio (as the app would)
+        var submitResult = await _controller.Submit(new UserFeedbackSubmission
+        {
+            Audio = MakeAudio(),
+            DurationSec = 3,
+            Screen = "matches",
+            AppVersion = "test",
+        });
+        var created = Assert.IsType<CreatedAtActionResult>(submitResult);
+        var dto = created.Value!;
+
+        // Extract the id via reflection (anonymous type)
+        var idProp = dto.GetType().GetProperty("id");
+        Assert.NotNull(idProp);
+        var id = Assert.IsType<int>(idProp.GetValue(dto));
+
+        // Step 2: GET unprocessed list (as the watcher would)
+        var listResult = await _controller.List(unprocessed: true, since: null, page: 1, pageSize: 50);
+        var listOk = Assert.IsType<OkObjectResult>(listResult);
+        var listJson = System.Text.Json.JsonSerializer.Serialize(listOk.Value);
+        Assert.Contains($"\"id\":{id}", listJson);
+
+        // Step 3: PATCH transcript (as the watcher would)
+        var patchResult = await _controller.PatchTranscript(id, new TranscriptUpdate { Transcript = "Hello from watcher test" });
+        Assert.IsType<OkObjectResult>(patchResult);
+
+        // Step 4: Verify row is now processed
+        var updated = await _db.UserFeedbacks.FindAsync(id);
+        Assert.NotNull(updated);
+        Assert.Equal("Hello from watcher test", updated.Transcript);
+        Assert.NotNull(updated.ProcessedAt);
+    }
 }

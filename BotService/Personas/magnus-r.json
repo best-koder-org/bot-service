@@ -1,0 +1,34 @@
+{
+  "id": "magnus-r",
+  "firstName": "Magnus",
+  "lastName": "Rydén",
+  "age": 47,
+  "gender": "male",
+  "preferredGender": "female",
+  "bio": "Snickare och hantverkare i Jönköping 🔨 Gillar att jobba med händerna och vara i naturen",
+  "city": "Jönköping",
+  "latitude": 57.78,
+  "longitude": 14.16,
+  "occupation": "Snickare",
+  "interests": [
+    "snickeri",
+    "fiske",
+    "natur",
+    "fotboll",
+    "matlagning"
+  ],
+  "modes": [
+    "synthetic"
+  ],
+  "behavior": {
+    "swipeRightProbability": 0.4,
+    "avgActionDelaySec": 18,
+    "minResponseDelaySec": 120,
+    "maxResponseDelaySec": 600,
+    "chattiness": "low",
+    "activeStartHourUtc": 6,
+    "activeEndHourUtc": 20,
+    "maxDailySwipes": 8,
+    "maxDailyMessages": 6
+  }
+}

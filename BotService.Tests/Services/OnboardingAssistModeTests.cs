@@ -1,3 +1,4 @@
+using BotService.Services;
 using Microsoft.Extensions.DependencyInjection;
 using BotService.Data;
 using BotService.Models;
@@ -87,7 +88,7 @@ public class OnboardingAssistModeTests
     {
         var sp = BuildServiceProvider();
         var observer = new BotService.Services.Observer.BotObserver(
-            sp, sp.GetRequiredService<ILoggerFactory>().CreateLogger<BotService.Services.Observer.BotObserver>());
+            sp, sp.GetRequiredService<ILoggerFactory>().CreateLogger<BotService.Services.Observer.BotObserver>(), Mock.Of<IWebhookNotifier>());
         var logger = sp.GetRequiredService<ILoggerFactory>().CreateLogger<OnboardingAssistMode>();
         return new OnboardingAssistMode(sp, observer, logger);
     }
@@ -97,7 +98,7 @@ public class OnboardingAssistModeTests
         var sp = BuildServiceProvider();
         db = sp.GetRequiredService<BotDbContext>();
         var observer = new BotService.Services.Observer.BotObserver(
-            sp, sp.GetRequiredService<ILoggerFactory>().CreateLogger<BotService.Services.Observer.BotObserver>());
+            sp, sp.GetRequiredService<ILoggerFactory>().CreateLogger<BotService.Services.Observer.BotObserver>(), Mock.Of<IWebhookNotifier>());
         var logger = sp.GetRequiredService<ILoggerFactory>().CreateLogger<OnboardingAssistMode>();
         return new OnboardingAssistMode(sp, observer, logger);
     }
