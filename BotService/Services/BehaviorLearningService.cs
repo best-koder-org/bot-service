@@ -11,7 +11,7 @@ namespace BotService.Services;
 /// </summary>
 public class BehaviorLearningService
 {
-    private readonly BotDbContext _db;
+    private readonly IServiceScopeFactory _scopeFactory;
     private readonly BotPersonaEngine _engine;
     private readonly ILogger<BehaviorLearningService> _logger;
     private readonly BotMetrics _metrics;
@@ -22,12 +22,12 @@ public class BehaviorLearningService
     private const double LearningRate = 0.05;
 
     public BehaviorLearningService(
-        BotDbContext db,
+        IServiceScopeFactory scopeFactory,
         BotPersonaEngine engine,
         BotMetrics metrics,
         ILogger<BehaviorLearningService> logger)
     {
-        _db = db;
+        _scopeFactory = scopeFactory;
         _engine = engine;
         _metrics = metrics;
         _logger = logger;
@@ -39,7 +39,10 @@ public class BehaviorLearningService
     /// </summary>
     public async Task LearnAsync(CancellationToken ct = default)
     {
-        var bots = await _db.BotStates
+        using var scope = _scopeFactory.CreateScope();
+        var db = scope.ServiceProvider.GetRequiredService<BotDbContext>();
+
+        var bots = await db.BotStates
             .Where(b => b.Status == BotStatus.Active)
             .ToListAsync(ct);
 
@@ -110,7 +113,7 @@ public class BehaviorLearningService
             if (changed)
             {
                 _metrics.Increment("bot_behavior_adjustments_total");
-                await _db.SaveChangesAsync(ct);
+                await db.SaveChangesAsync(ct);
             }
         }
     }

@@ -2,6 +2,7 @@ using BotService.Data;
 using BotService.Models;
 using BotService.Services;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging.Abstractions;
 using Xunit;
 
@@ -19,13 +20,16 @@ public class BehaviorLearningTests : IDisposable
 
     public BehaviorLearningTests()
     {
-        var opts = new DbContextOptionsBuilder<BotDbContext>()
-            .UseInMemoryDatabase($"BehaviorTests_{Guid.NewGuid()}")
-            .Options;
-        _db = new BotDbContext(opts);
+        var dbName = $"BehaviorTests_{Guid.NewGuid()}";
+        var services = new ServiceCollection();
+        services.AddDbContext<BotDbContext>(o => o.UseInMemoryDatabase(dbName));
+        var provider = services.BuildServiceProvider();
+        _db = provider.GetRequiredService<BotDbContext>();
         _metrics = new BotMetrics();
         _engine = new BotPersonaEngine(NullLogger<BotPersonaEngine>.Instance);
-        _svc = new BehaviorLearningService(_db, _engine, _metrics, NullLogger<BehaviorLearningService>.Instance);
+        _svc = new BehaviorLearningService(
+            provider.GetRequiredService<IServiceScopeFactory>(),
+            _engine, _metrics, NullLogger<BehaviorLearningService>.Instance);
     }
 
     public void Dispose() => _db.Dispose();

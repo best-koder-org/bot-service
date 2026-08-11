@@ -1,15 +1,12 @@
-FROM mcr.microsoft.com/dotnet/aspnet:8.0 AS base
+FROM mcr.microsoft.com/dotnet/sdk:8.0 AS build-env
 WORKDIR /app
-EXPOSE 8089
-
-FROM mcr.microsoft.com/dotnet/sdk:8.0 AS build
-WORKDIR /src
-COPY ["BotService.csproj", "."]
+COPY BotService.csproj ./
 RUN dotnet restore
-COPY . .
-RUN dotnet publish -c Release -o /app/publish
+COPY . ./
+RUN dotnet publish -c Release -o out
 
-FROM base AS final
+FROM mcr.microsoft.com/dotnet/aspnet:8.0
 WORKDIR /app
-COPY --from=build /app/publish .
+COPY --from=build-env /app/out .
+EXPOSE 8089
 ENTRYPOINT ["dotnet", "BotService.dll"]
