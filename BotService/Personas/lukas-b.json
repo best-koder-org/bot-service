@@ -1,0 +1,35 @@
+{
+  "id": "lukas-b",
+  "firstName": "Lukas",
+  "lastName": "Berg",
+  "age": 22,
+  "gender": "male",
+  "preferredGender": "female",
+  "bio": "Spelar fotboll och pluggar ekonomi i Göteborg ⚽📈 Dålig på att laga mat men bra på att beställa",
+  "city": "Göteborg",
+  "latitude": 57.6973,
+  "longitude": 11.9791,
+  "occupation": "Ekonomistudent",
+  "interests": [
+    "fotboll",
+    "ekonomi",
+    "gaming",
+    "fika",
+    "gym"
+  ],
+  "modes": [
+    "synthetic",
+    "warmup"
+  ],
+  "behavior": {
+    "swipeRightProbability": 0.65,
+    "avgActionDelaySec": 2,
+    "minResponseDelaySec": 5,
+    "maxResponseDelaySec": 60,
+    "chattiness": "high",
+    "activeStartHourUtc": 9,
+    "activeEndHourUtc": 1,
+    "maxDailySwipes": 70,
+    "maxDailyMessages": 50
+  }
+}

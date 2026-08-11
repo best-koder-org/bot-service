@@ -64,4 +64,11 @@ public class BotPersonaEngine
 
     public BotPersona? GetPersonaById(string id) =>
         _personas.FirstOrDefault(p => p.Id.Equals(id, StringComparison.OrdinalIgnoreCase));
+
+    /// <summary>Add a persona to the in-memory collection (used by tests and dynamic generation).</summary>
+    public void AddPersona(BotPersona persona)
+    {
+        _personas.RemoveAll(p => p.Id == persona.Id);
+        _personas.Add(persona);
+    }
 }

@@ -27,6 +27,12 @@ public class BotServiceOptions
     
     /// <summary>Startup delay in seconds before bots begin acting</summary>
     public int StartupDelaySec { get; set; } = 15;
+    
+    /// <summary>Observer/reporter settings</summary>
+    public ObserverOptions Observer { get; set; } = new();
+    
+    /// <summary>Webhook notification config</summary>
+    public WebhookOptions Webhook { get; set; } = new();
 }
 
 public class KeycloakOptions
@@ -48,6 +54,8 @@ public class ServiceEndpoints
     public string PhotoService { get; set; } = "http://localhost:8085";
     public string MessagingHub { get; set; } = "http://localhost:8086/messagingHub";
     public string SafetyService { get; set; } = "http://localhost:8088";
+    /// <summary>Internal API key for service-to-service calls (X-Internal-API-Key header)</summary>
+    public string InternalApiKey { get; set; } = "";
 }
 
 public class BotModeOptions
@@ -143,4 +151,16 @@ public class ConversationOptions
     
     /// <summary>Max retries if guardrails reject LLM output</summary>
     public int MaxGuardrailRetries { get; set; } = 2;
+}
+
+/// <summary>
+/// Observer/reporter configuration for the bot findings system.
+/// </summary>
+public class ObserverOptions
+{
+    /// <summary>Whether the periodic reporter is enabled</summary>
+    public bool ReporterEnabled { get; set; } = true;
+    
+    /// <summary>Hours between digest reports (default 6)</summary>
+    public int ReportIntervalHours { get; set; } = 6;
 }

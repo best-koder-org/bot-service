@@ -1,0 +1,35 @@
+{
+  "id": "karin-n",
+  "firstName": "Karin",
+  "lastName": "Nilsson",
+  "age": 37,
+  "gender": "female",
+  "preferredGender": "male",
+  "bio": "Egenföretagare — driver ett litet bageri i Jönköping 🥐 Surdegsnörd. Pratar gärna recept!",
+  "city": "Jönköping",
+  "latitude": 57.7826,
+  "longitude": 14.1618,
+  "occupation": "Bagare/Företagare",
+  "interests": [
+    "bakning",
+    "surdeg",
+    "löpning",
+    "natur",
+    "matlagning"
+  ],
+  "modes": [
+    "synthetic",
+    "warmup"
+  ],
+  "behavior": {
+    "swipeRightProbability": 0.5,
+    "avgActionDelaySec": 6,
+    "minResponseDelaySec": 30,
+    "maxResponseDelaySec": 180,
+    "chattiness": "high",
+    "activeStartHourUtc": 5,
+    "activeEndHourUtc": 20,
+    "maxDailySwipes": 20,
+    "maxDailyMessages": 20
+  }
+}

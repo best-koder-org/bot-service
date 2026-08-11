@@ -10,8 +10,17 @@
   "latitude": 57.7089,
   "longitude": 11.9746,
   "occupation": "Sjuksköterska",
-  "interests": ["hundar", "vandring", "matlagning", "netflix", "dans"],
-  "modes": ["synthetic", "warmup"],
+  "interests": [
+    "hundar",
+    "vandring",
+    "matlagning",
+    "netflix",
+    "dans"
+  ],
+  "modes": [
+    "synthetic",
+    "warmup"
+  ],
   "behavior": {
     "swipeRightProbability": 0.5,
     "avgActionDelaySec": 4,
@@ -21,6 +30,7 @@
     "activeStartHourUtc": 6,
     "activeEndHourUtc": 21,
     "maxDailySwipes": 50,
-    "maxDailyMessages": 30
-  }
+    "maxDailyMessages": 500
+  },
+  "maxDailyMessages": 20
 }

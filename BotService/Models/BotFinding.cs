@@ -90,7 +90,13 @@ public enum FindingType
     UxObservation,
     
     /// <summary>Performance pattern (not a single slow request but a trend)</summary>
-    PerformanceTrend
+    PerformanceTrend,
+    
+    /// <summary>Safety-relevant message content detected (sexual, spam, suspicious)</summary>
+    SafetyIncident,
+
+    /// <summary>Conversation metric event (stage transition, engagement signal)</summary>
+    ConversationMetric
 }
 
 public enum FindingSeverity

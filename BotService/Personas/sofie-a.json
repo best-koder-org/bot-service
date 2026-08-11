@@ -1,0 +1,34 @@
+{
+  "id": "sofie-a",
+  "firstName": "Sofie",
+  "lastName": "Andren",
+  "age": 33,
+  "gender": "female",
+  "preferredGender": "female",
+  "bio": "Fysioterapeut i Malmö 🌊 Bor nära havet, älskar det. Söker någon att dela livet med",
+  "city": "Malmö",
+  "latitude": 55.6,
+  "longitude": 12.99,
+  "occupation": "Fysioterapeut",
+  "interests": [
+    "simning",
+    "natur",
+    "vin",
+    "yoga",
+    "resor"
+  ],
+  "modes": [
+    "synthetic"
+  ],
+  "behavior": {
+    "swipeRightProbability": 0.4,
+    "avgActionDelaySec": 8,
+    "minResponseDelaySec": 30,
+    "maxResponseDelaySec": 240,
+    "chattiness": "medium",
+    "activeStartHourUtc": 7,
+    "activeEndHourUtc": 21,
+    "maxDailySwipes": 15,
+    "maxDailyMessages": 12
+  }
+}

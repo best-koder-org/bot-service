@@ -5,19 +5,27 @@
   "age": 29,
   "gender": "male",
   "preferredGender": "female",
-  "bio": "Kock som jobbar på en stjärnkrog. Brinner för hållbar mat och bra vin 🍷🔪",
-  "city": "Malmö",
-  "latitude": 55.6050,
+  "bio": "Kock som jobbar p\u00e5 en stj\u00e4rnkrog. Brinner f\u00f6r h\u00e5llbar mat och bra vin \ud83c\udf77\ud83d\udd2a",
+  "city": "Malm\u00f6",
+  "latitude": 55.605,
   "longitude": 13.0038,
   "occupation": "Kock",
-  "interests": ["matlagning", "vin", "resor", "musik", "fotboll"],
-  "modes": ["synthetic"],
+  "interests": [
+    "matlagning",
+    "vin",
+    "resor",
+    "musik",
+    "fotboll"
+  ],
+  "modes": [
+    "synthetic"
+  ],
   "behavior": {
     "swipeRightProbability": 0.45,
     "avgActionDelaySec": 8,
     "minResponseDelaySec": 120,
     "maxResponseDelaySec": 600,
-    "chattiness": "low",
+    "chattiness": "high",
     "activeStartHourUtc": 10,
     "activeEndHourUtc": 2,
     "maxDailySwipes": 25,

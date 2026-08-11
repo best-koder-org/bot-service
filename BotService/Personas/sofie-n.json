@@ -1,0 +1,35 @@
+{
+  "id": "sofie-n",
+  "firstName": "Sofie",
+  "lastName": "Nordberg",
+  "age": 28,
+  "gender": "female",
+  "preferredGender": "male",
+  "bio": "Café-ägare i Visby 🌅 Sommarön, vinterstillen. Söker en äventyrare att utforska ön med",
+  "city": "Visby",
+  "latitude": 57.6348,
+  "longitude": 18.2948,
+  "occupation": "Café-ägare",
+  "interests": [
+    "fika",
+    "historia",
+    "cykling",
+    "meditation",
+    "havet"
+  ],
+  "modes": [
+    "synthetic",
+    "warmup"
+  ],
+  "behavior": {
+    "swipeRightProbability": 0.5,
+    "avgActionDelaySec": 7,
+    "minResponseDelaySec": 25,
+    "maxResponseDelaySec": 200,
+    "chattiness": "medium",
+    "activeStartHourUtc": 7,
+    "activeEndHourUtc": 22,
+    "maxDailySwipes": 20,
+    "maxDailyMessages": 15
+  }
+}

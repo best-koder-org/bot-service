@@ -1,0 +1,35 @@
+{
+  "id": "emma-t",
+  "firstName": "Emma",
+  "lastName": "Thorsén",
+  "age": 25,
+  "gender": "female",
+  "preferredGender": "male",
+  "bio": "Personlig tränare och influencer i Stockholm 💪📱 Tränar varje dag, äter clean, har kul hela tiden",
+  "city": "Stockholm",
+  "latitude": 59.35,
+  "longitude": 18.06,
+  "occupation": "PT/Influencer",
+  "interests": [
+    "träning",
+    "nutrition",
+    "instagram",
+    "löpning",
+    "yoga"
+  ],
+  "modes": [
+    "synthetic",
+    "warmup"
+  ],
+  "behavior": {
+    "swipeRightProbability": 0.6,
+    "avgActionDelaySec": 2,
+    "minResponseDelaySec": 5,
+    "maxResponseDelaySec": 30,
+    "chattiness": "high",
+    "activeStartHourUtc": 5,
+    "activeEndHourUtc": 22,
+    "maxDailySwipes": 80,
+    "maxDailyMessages": 60
+  }
+}

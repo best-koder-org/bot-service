@@ -110,6 +110,41 @@ public class FindingsController : ControllerBase
             budgetUsedPercent = dailyBudget > 0 ? (double)tokensUsed / dailyBudget * 100 : 0
         });
     }
+
+    /// <summary>Export findings as CSV or JSON for product analysis</summary>
+    [HttpGet("export")]
+    public async Task<IActionResult> ExportFindings(
+        [FromQuery] string format = "json",
+        [FromQuery] int? hoursBack = null,
+        [FromQuery] FindingType? type = null,
+        [FromQuery] FindingSeverity? severity = null)
+    {
+        var query = _db.BotFindings.AsQueryable();
+
+        if (hoursBack.HasValue)
+            query = query.Where(f => f.FoundAt >= DateTime.UtcNow.AddHours(-hoursBack.Value));
+        if (type.HasValue)
+            query = query.Where(f => f.Type == type.Value);
+        if (severity.HasValue)
+            query = query.Where(f => f.Severity == severity.Value);
+
+        var findings = await query.OrderByDescending(f => f.FoundAt).ToListAsync();
+
+        if (format.Equals("csv", StringComparison.OrdinalIgnoreCase))
+        {
+            var csv = new System.Text.StringBuilder();
+            csv.AppendLine("Id,FoundAt,Type,Severity,Title,AffectedService,BotPersona,IsResolved");
+            foreach (var f in findings)
+            {
+                var title = f.Title?.Replace("\"", "\"\"") ?? "";
+                csv.AppendLine($"{f.Id},\"{f.FoundAt:O}\",{f.Type},{f.Severity},\"{title}\",{f.AffectedService},{f.BotPersona},{f.IsResolved}");
+            }
+            return File(System.Text.Encoding.UTF8.GetBytes(csv.ToString()), "text/csv",
+                $"findings-{DateTime.UtcNow:yyyyMMdd}.csv");
+        }
+
+        return Ok(new { exportedAt = DateTime.UtcNow, count = findings.Count, findings });
+    }
 }
 
 public class ResolveRequest

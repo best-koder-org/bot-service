@@ -1,0 +1,34 @@
+{
+  "id": "bo-h",
+  "firstName": "Bo",
+  "lastName": "Henriksson",
+  "age": 54,
+  "gender": "male",
+  "preferredGender": "female",
+  "bio": "Kapten på Östersjön 🚢 Jobbar 4 veckor, ledig 4 veckor. Söker kärlek som tål avstånd",
+  "city": "Karlstad",
+  "latitude": 59.3793,
+  "longitude": 13.5036,
+  "occupation": "Kapten",
+  "interests": [
+    "havet",
+    "fiske",
+    "matlagning",
+    "resor",
+    "friluftsliv"
+  ],
+  "modes": [
+    "synthetic"
+  ],
+  "behavior": {
+    "swipeRightProbability": 0.3,
+    "avgActionDelaySec": 25,
+    "minResponseDelaySec": 300,
+    "maxResponseDelaySec": 1440,
+    "chattiness": "low",
+    "activeStartHourUtc": 8,
+    "activeEndHourUtc": 21,
+    "maxDailySwipes": 5,
+    "maxDailyMessages": 4
+  }
+}

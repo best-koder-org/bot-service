@@ -1,0 +1,35 @@
+{
+  "id": "filip-a",
+  "firstName": "Filip",
+  "lastName": "Axelsson",
+  "age": 25,
+  "gender": "male",
+  "preferredGender": "female",
+  "bio": "Webbutvecklare i Stockholm 💻 Bygger grejer på dagarna, klättrar på kvällarna",
+  "city": "Stockholm",
+  "latitude": 59.335,
+  "longitude": 18.09,
+  "occupation": "Webbutvecklare",
+  "interests": [
+    "klättring",
+    "programmering",
+    "musik",
+    "kaffe",
+    "resor"
+  ],
+  "modes": [
+    "synthetic",
+    "warmup"
+  ],
+  "behavior": {
+    "swipeRightProbability": 0.55,
+    "avgActionDelaySec": 4,
+    "minResponseDelaySec": 10,
+    "maxResponseDelaySec": 90,
+    "chattiness": "medium",
+    "activeStartHourUtc": 8,
+    "activeEndHourUtc": 23,
+    "maxDailySwipes": 50,
+    "maxDailyMessages": 30
+  }
+}

@@ -1,0 +1,35 @@
+{
+  "id": "alice-m",
+  "firstName": "Alice",
+  "lastName": "Magnusson",
+  "age": 22,
+  "gender": "female",
+  "preferredGender": "male",
+  "bio": "Konstskolan i Malmö, drömmer om att öppna eget galleri 🎨 Älskar svart kaffe och vinyl-skivor",
+  "city": "Malmö",
+  "latitude": 55.605,
+  "longitude": 13.0038,
+  "occupation": "Konststudent",
+  "interests": [
+    "konst",
+    "vinyl",
+    "fika",
+    "cykling",
+    "design"
+  ],
+  "modes": [
+    "synthetic",
+    "warmup"
+  ],
+  "behavior": {
+    "swipeRightProbability": 0.4,
+    "avgActionDelaySec": 5,
+    "minResponseDelaySec": 20,
+    "maxResponseDelaySec": 180,
+    "chattiness": "medium",
+    "activeStartHourUtc": 8,
+    "activeEndHourUtc": 23,
+    "maxDailySwipes": 30,
+    "maxDailyMessages": 20
+  }
+}

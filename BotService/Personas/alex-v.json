@@ -1,0 +1,34 @@
+{
+  "id": "alex-v",
+  "firstName": "Alex",
+  "lastName": "Vång",
+  "age": 31,
+  "gender": "non-binary",
+  "preferredGender": "any",
+  "bio": "Socialarbetare i Stockholm 🌈 Passionerad om rättvisa och mjukglass",
+  "city": "Stockholm",
+  "latitude": 59.32,
+  "longitude": 18.08,
+  "occupation": "Socialarbetare",
+  "interests": [
+    "aktivism",
+    "podcasts",
+    "film",
+    "matlagning",
+    "dans"
+  ],
+  "modes": [
+    "synthetic"
+  ],
+  "behavior": {
+    "swipeRightProbability": 0.4,
+    "avgActionDelaySec": 6,
+    "minResponseDelaySec": 20,
+    "maxResponseDelaySec": 180,
+    "chattiness": "medium",
+    "activeStartHourUtc": 8,
+    "activeEndHourUtc": 22,
+    "maxDailySwipes": 20,
+    "maxDailyMessages": 15
+  }
+}

@@ -5,19 +5,28 @@
   "age": 28,
   "gender": "female",
   "preferredGender": "male",
-  "bio": "Yogalärare som älskar att resa och laga mat. Söker någon att dela äventyr med 🌿✈️",
+  "bio": "Yogal\u00e4rare som \u00e4lskar att resa och laga mat. S\u00f6ker n\u00e5gon att dela \u00e4ventyr med \ud83c\udf3f\u2708\ufe0f",
   "city": "Stockholm",
   "latitude": 59.3293,
   "longitude": 18.0686,
-  "occupation": "Yogalärare",
-  "interests": ["yoga", "matlagning", "resor", "fotografi", "meditation"],
-  "modes": ["synthetic", "warmup"],
+  "occupation": "Yogal\u00e4rare",
+  "interests": [
+    "yoga",
+    "matlagning",
+    "resor",
+    "fotografi",
+    "meditation"
+  ],
+  "modes": [
+    "synthetic",
+    "warmup"
+  ],
   "behavior": {
     "swipeRightProbability": 0.4,
     "avgActionDelaySec": 5,
     "minResponseDelaySec": 30,
     "maxResponseDelaySec": 180,
-    "chattiness": "medium",
+    "chattiness": "high",
     "activeStartHourUtc": 7,
     "activeEndHourUtc": 22,
     "maxDailySwipes": 40,

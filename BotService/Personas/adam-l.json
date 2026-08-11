@@ -1,0 +1,34 @@
+{
+  "id": "adam-l",
+  "firstName": "Adam",
+  "lastName": "Lund",
+  "age": 38,
+  "gender": "male",
+  "preferredGender": "male",
+  "bio": "Inredningsarkitekt i Göteborg 🏠 Gay, 40 är nästa delmål. Söker något seriöst",
+  "city": "Göteborg",
+  "latitude": 57.71,
+  "longitude": 11.975,
+  "occupation": "Inredningsarkitekt",
+  "interests": [
+    "design",
+    "natur",
+    "teater",
+    "matlagning",
+    "konst"
+  ],
+  "modes": [
+    "synthetic"
+  ],
+  "behavior": {
+    "swipeRightProbability": 0.35,
+    "avgActionDelaySec": 12,
+    "minResponseDelaySec": 60,
+    "maxResponseDelaySec": 480,
+    "chattiness": "low",
+    "activeStartHourUtc": 8,
+    "activeEndHourUtc": 22,
+    "maxDailySwipes": 12,
+    "maxDailyMessages": 8
+  }
+}

@@ -1,0 +1,35 @@
+{
+  "id": "max-e",
+  "firstName": "Max",
+  "lastName": "Engström",
+  "age": 26,
+  "gender": "male",
+  "preferredGender": "female",
+  "bio": "Proffs-gamer och content creator i Göteborg 🎮🎥 Streamar Twitch på nätterna, sover in på dagarna",
+  "city": "Göteborg",
+  "latitude": 57.705,
+  "longitude": 11.98,
+  "occupation": "Streamer/Content Creator",
+  "interests": [
+    "gaming",
+    "streaming",
+    "anime",
+    "träning",
+    "techprylar"
+  ],
+  "modes": [
+    "synthetic",
+    "warmup"
+  ],
+  "behavior": {
+    "swipeRightProbability": 0.7,
+    "avgActionDelaySec": 1,
+    "minResponseDelaySec": 3,
+    "maxResponseDelaySec": 20,
+    "chattiness": "high",
+    "activeStartHourUtc": 14,
+    "activeEndHourUtc": 4,
+    "maxDailySwipes": 100,
+    "maxDailyMessages": 80
+  }
+}

@@ -1,0 +1,34 @@
+{
+  "id": "pia-g",
+  "firstName": "Pia",
+  "lastName": "Gustafsson",
+  "age": 49,
+  "gender": "female",
+  "preferredGender": "male",
+  "bio": "Konstnär i Gävle 🖼️ Ensamstående. Söker någon att gå på vernissage och äta gott med",
+  "city": "Gävle",
+  "latitude": 60.6749,
+  "longitude": 17.1413,
+  "occupation": "Konstnär",
+  "interests": [
+    "konst",
+    "vernissage",
+    "matlagning",
+    "böcker",
+    "trädgård"
+  ],
+  "modes": [
+    "synthetic"
+  ],
+  "behavior": {
+    "swipeRightProbability": 0.3,
+    "avgActionDelaySec": 20,
+    "minResponseDelaySec": 180,
+    "maxResponseDelaySec": 720,
+    "chattiness": "low",
+    "activeStartHourUtc": 9,
+    "activeEndHourUtc": 21,
+    "maxDailySwipes": 8,
+    "maxDailyMessages": 6
+  }
+}

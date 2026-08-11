@@ -4,6 +4,7 @@ using BotService.Data;
 using BotService.Models;
 using BotService.Services.Content;
 using BotService.Services.Conversation;
+using BotService.Services.Observer;
 using BotService.Services.Keycloak;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Options;
@@ -33,9 +34,10 @@ public class SyntheticUserService : BackgroundService
     private readonly MessageContentProvider _messageProvider;
     private readonly IConversationEngine _conversationEngine;
     private readonly Random _random = new();
+    private readonly BotObserver _observer;
 
     /// <summary>Max unanswered messages to any single user before flagging unresponsive</summary>
-    private const int MaxUnansweredMessages = 5;
+    private const int MaxUnansweredMessages = 20;
 
     public SyntheticUserService(
         IServiceProvider serviceProvider,
@@ -43,7 +45,8 @@ public class SyntheticUserService : BackgroundService
         IOptionsMonitor<BotServiceOptions> config,
         BotPersonaEngine personaEngine,
         MessageContentProvider messageProvider,
-        IConversationEngine conversationEngine)
+        IConversationEngine conversationEngine,
+        BotObserver observer)
     {
         _serviceProvider = serviceProvider;
         _logger = logger;
@@ -51,6 +54,7 @@ public class SyntheticUserService : BackgroundService
         _personaEngine = personaEngine;
         _messageProvider = messageProvider;
         _conversationEngine = conversationEngine;
+        _observer = observer;
     }
 
     protected override async Task ExecuteAsync(CancellationToken stoppingToken)
@@ -143,16 +147,23 @@ public class SyntheticUserService : BackgroundService
                 var keycloakId = await keycloak.EnsureBotUserAsync(persona, ct);
                 var (accessToken, refreshToken, expiresAt) = await keycloak.GetBotTokenAsync(persona, ct);
 
-                int? profileId = existingState?.ProfileId;
+                // Use the JWT-authenticated provision endpoint.
+                // Handles create and reconcile in one call — no more email conflicts or stale IDs.
+                var (profileId, created) = await apiClient.ProvisionBotAsync(accessToken, persona, ct);
+
                 if (profileId == null)
                 {
-                    profileId = await apiClient.CreateProfileAsync(persona, accessToken, ct);
-                    if (profileId == null)
-                    {
-                        var profile = await apiClient.GetMyProfileAsync(accessToken, ct);
-                        if (profile != null && profile.Value.TryGetProperty("id", out var idEl))
-                            profileId = idEl.GetInt32();
-                    }
+                    _logger.LogError("Failed to provision profile for persona {PersonaId}", persona.Id);
+                    continue;
+                }
+
+                if (created)
+                {
+                    _logger.LogInformation("Created new profile {ProfileId} for persona {PersonaId}", profileId, persona.Id);
+                }
+                else
+                {
+                    _logger.LogInformation("Reconciled profile {ProfileId} for persona {PersonaId}", profileId, persona.Id);
                 }
 
                 if (existingState != null)
@@ -162,7 +173,8 @@ public class SyntheticUserService : BackgroundService
                     existingState.AccessToken = accessToken;
                     existingState.RefreshToken = refreshToken;
                     existingState.TokenExpiresAt = expiresAt;
-                    existingState.Status = BotStatus.Active;
+                    if (existingState.Status != BotStatus.Paused)
+                        existingState.Status = BotStatus.Active;
                 }
                 else
                 {
@@ -298,13 +310,22 @@ public class SyntheticUserService : BackgroundService
             }
 
             var imageBytes = await File.ReadAllBytesAsync(photoPath, ct);
-            var uploaded = await apiClient.UploadPhotoAsync(imageBytes, $"{persona.Id}.png", token, ct);
+            var photoId = await apiClient.UploadPhotoAsync(imageBytes, $"{persona.Id}.png", token, ct);
             
-            if (uploaded)
+            if (photoId != null)
             {
                 state.PhotoUploaded = true;
                 await db.SaveChangesAsync(ct);
-                _logger.LogInformation("📸 Uploaded profile photo for bot {Id}", persona.Id);
+                _logger.LogInformation("📸 Uploaded profile photo for bot {Id} (photoId={PhotoId})", persona.Id, photoId);
+                
+                // Update UserService profile with photo URL so enrichment finds it
+                if (photoId > 0 && state.ProfileId.HasValue)
+                {
+                    var photoUrl = $"/api/photos/{photoId}/image";
+                    await apiClient.UpdateProfileAsync(state.ProfileId.Value, 
+                        new { primaryPhotoUrl = photoUrl }, token, ct);
+                    _logger.LogInformation("Updated profile {ProfileId} with photo URL {Url}", state.ProfileId.Value, photoUrl);
+                }
             }
         }
         catch (Exception ex)
@@ -378,7 +399,9 @@ public class SyntheticUserService : BackgroundService
                     _logger.LogDebug("Bot {Id}: blocked by {Count} users", bot.PersonaId, blockedIds.Count);
 
                 // Phase 1: Discover & Swipe
-                if (bot.SwipesToday < persona.Behavior.MaxDailySwipes)
+                // Phase 1: Discover & Swipe — skip if all candidates already swiped
+                // (run once every 30 cycles to avoid wasting time on "Already swiped" errors)
+                if (bot.SwipesToday < persona.Behavior.MaxDailySwipes && _random.Next(30) == 0)
                 {
                     await DiscoverAndSwipeAsync(bot, persona, apiClient, ct);
                 }
@@ -403,7 +426,7 @@ public class SyntheticUserService : BackgroundService
             await db.SaveChangesAsync(ct);
 
             // Random delay between bots to spread load
-            await Task.Delay(TimeSpan.FromMilliseconds(_random.Next(200, 500)), ct); // fast reply mode
+            await Task.Delay(TimeSpan.FromMilliseconds(_random.Next(50, 150)), ct); // fast reply mode
         }
     }
 
@@ -461,9 +484,9 @@ public class SyntheticUserService : BackgroundService
         var matches = await apiClient.GetMatchesAsync(bot.ProfileId!.Value, bot.AccessToken!, ct);
         if (matches.Length == 0) return;
 
-        // Pick a random match to message
-        var match = matches[_random.Next(matches.Length)];
-        
+        // Check ALL matches each cycle for fast reply
+        foreach (var match in matches)
+        {
         // Try to get the other user's Keycloak ID
         string? otherUserId = null;
         
@@ -488,14 +511,23 @@ public class SyntheticUserService : BackgroundService
             }
         }
 
-        if (string.IsNullOrEmpty(otherUserId)) return;
+        if (string.IsNullOrEmpty(otherUserId)) continue;
+
+        // ─── Bot guard: skip if recipient is another bot ──────
+        var allBotKeycloakIds = await GetAllBotKeycloakIdsAsync();
+        if (allBotKeycloakIds.Contains(otherUserId))
+        {
+            _logger.LogDebug("Bot {BotId}: skipping {Target} — recipient is another bot",
+                bot.PersonaId, otherUserId);
+            continue;
+        }
 
         // ─── Safety guard: skip if user blocked us ─────────────
         if (bot.IsBlockedBy(otherUserId))
         {
             _logger.LogDebug("Bot {BotId}: skipping {Target} — user has blocked us",
                 bot.PersonaId, otherUserId);
-            return;
+            continue;
         }
 
         // ─── Conversation guard: skip unresponsive users ───────
@@ -503,7 +535,7 @@ public class SyntheticUserService : BackgroundService
         {
             _logger.LogDebug("Bot {BotId}: skipping {Target} — marked unresponsive (48h cooldown)",
                 bot.PersonaId, otherUserId);
-            return;
+            continue;
         }
 
         // ─── Conversation guard: cap per-user messages ─────────
@@ -513,7 +545,7 @@ public class SyntheticUserService : BackgroundService
             bot.MarkUnresponsive(otherUserId);
             _logger.LogInformation("Bot {BotId}: marking {Target} unresponsive after {Count} unanswered messages",
                 bot.PersonaId, otherUserId, sentCount);
-            return;
+            continue;
         }
 
         // ─── Generate message via Conversation Engine (LLM/hybrid/canned) ─────
@@ -533,7 +565,27 @@ public class SyntheticUserService : BackgroundService
                 {
                     _logger.LogDebug("Bot {BotId}: waiting for {Target} to reply (last msg was ours)",
                         bot.PersonaId, otherUserId);
-                    return;
+                    continue;
+                }
+            }
+
+            // ─── Message Classification (T323/T324): classify received messages ─────
+            if (recentMessages.Count > 0)
+            {
+                var lastReceived = recentMessages.FirstOrDefault(m => m.SenderUserId != (bot.KeycloakUserId ?? ""));
+                if (lastReceived != null && !string.IsNullOrEmpty(lastReceived.Content))
+                {
+                    var tone = MessageClassifier.Classify(lastReceived.Content);
+                    if (MessageClassifier.IsSafetyRelevant(tone))
+                    {
+                        await _observer.RecordObservation(
+                            FindingType.SafetyIncident, FindingSeverity.High,
+                            $"Safety-relevant message detected: {tone}",
+                            $"Received {tone} message from {otherUserId}: \"{lastReceived.Content[..Math.Min(50, lastReceived.Content.Length)]}...\"",
+                            "messaging-service", persona.FirstName, bot.KeycloakUserId ?? "");
+                        _logger.LogWarning("Bot {BotId}: received {Tone} message from {User}",
+                            bot.PersonaId, tone, otherUserId);
+                    }
                 }
             }
 
@@ -548,6 +600,18 @@ public class SyntheticUserService : BackgroundService
 
             var reply = await _conversationEngine.GenerateReplyAsync(context, ct);
             message = reply.Message;
+
+            // ─── Conversation Metrics (T325): track stage ─────
+            var msgContents = recentMessages.Select(m => m.Content).ToList();
+            var stageResult = ConversationStageDetector.Detect(bot.ConversationCount, msgContents);
+            if (stageResult.Reason != "message_count")
+            {
+                await _observer.RecordObservation(
+                    FindingType.ConversationMetric, FindingSeverity.Info,
+                    $"Stage accelerated: {stageResult.Stage} ({stageResult.Reason})",
+                    $"Conversation with {otherUserId} reached {stageResult.Stage} via {stageResult.Reason} at message #{bot.ConversationCount}",
+                    "bot-service", persona.FirstName, bot.KeycloakUserId ?? "");
+            }
 
             _logger.LogDebug("Bot {BotId}: generated {Source} message ({Provider}, {Tokens} tokens, {Latency}ms)",
                 bot.PersonaId, reply.Source, reply.Provider ?? "n/a", reply.TokensUsed, reply.LatencyMs);
@@ -568,5 +632,21 @@ public class SyntheticUserService : BackgroundService
                 bot.PersonaId, otherUserId, message[..Math.Min(40, message.Length)],
                 bot.GetMessageCountForUser(otherUserId));
         }
+        } // end foreach match
+    }
+
+    /// <summary>
+    /// Returns a set of all bot Keycloak user IDs to prevent bots from messaging each other.
+    /// Cached per call; called once per ChatWithMatchesAsync cycle.
+    /// </summary>
+    private async Task<HashSet<string>> GetAllBotKeycloakIdsAsync()
+    {
+        using var scope = _serviceProvider.CreateScope();
+        var db = scope.ServiceProvider.GetRequiredService<BotDbContext>();
+        var ids = await db.BotStates
+            .Where(bs => bs.KeycloakUserId != null)
+            .Select(bs => bs.KeycloakUserId!)
+            .ToListAsync();
+        return new HashSet<string>(ids);
     }
 }

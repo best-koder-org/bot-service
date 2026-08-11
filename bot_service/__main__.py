@@ -3,6 +3,8 @@ import asyncio
 import os
 
 import httpx
+from fastapi import Body
+from fastapi.responses import JSONResponse
 from nicegui import ui, app
 
 from . import config
@@ -150,6 +152,141 @@ def clear_matchmaking_suggestions() -> str:
         return f"🗑️ Cleared {deleted} daily suggestion records"
     except Exception as e:
         return f"❌ Error: {e}"
+
+
+# ─── REST API (called by visual-qa bot_client) ───────────────────────────────
+
+
+@app.get("/api/health")
+async def api_health() -> JSONResponse:
+    """Health check for the bot-service REST API."""
+    return JSONResponse({"status": "healthy", "service": "bot-service"})
+
+
+@app.get("/api/status")
+async def api_status() -> JSONResponse:
+    """Return current seeder state."""
+    return JSONResponse(
+        {
+            "running": seeder_state.running,
+            "total": seeder_state.total,
+            "created": seeder_state.created,
+            "skipped": seeder_state.skipped,
+            "failed": seeder_state.failed,
+            "profiles_in_memory": len(seeder_state.bot_users),
+        }
+    )
+
+
+@app.post("/api/seed")
+async def api_seed(payload: dict = Body(default={})) -> JSONResponse:
+    """
+    Seed synthetic bot profiles.
+
+    Request body (all optional):
+      count  – number of profiles to create (default: 10)
+      mode   – "local" (in-memory only) or "keycloak" (push to services) (default: "local")
+    """
+    count = int(payload.get("count", 10))
+    mode = str(payload.get("mode", "local"))
+    logs: list[str] = []
+    profiles = await seed_bots(count=count, log_callback=logs.append, mode=mode)
+    return JSONResponse(
+        {
+            "seeded": len(profiles),
+            "mode": mode,
+            "logs": logs[-20:],  # last 20 log lines to keep response small
+        }
+    )
+
+
+@app.post("/api/seed-match")
+async def api_seed_match(payload: dict = Body(default={})) -> JSONResponse:
+    """
+    Seed a mutual match between two synthetic bot users.
+
+    Creates two bot profiles in keycloak mode, then submits a right-swipe from
+    each toward the other so the SwipeService registers a match.
+
+    Request body (all optional):
+      mode – "local" (build profiles only) or "keycloak" (push to services + create match)
+             default: "keycloak"
+    """
+    mode = str(payload.get("mode", "keycloak"))
+    logs: list[str] = []
+
+    # Seed exactly 2 profiles
+    profiles = await seed_bots(count=2, log_callback=logs.append, mode=mode)
+    if len(profiles) < 2:
+        return JSONResponse(
+            {"error": "Could not create 2 profiles", "logs": logs}, status_code=500
+        )
+
+    user_a = profiles[0]
+    user_b = profiles[1]
+    match_created = False
+
+    if mode == "keycloak":
+        # Attempt to create mutual swipes via SwipeService so a match is recorded
+        try:
+            async with httpx.AsyncClient(timeout=10) as client:
+                # Login as user_a
+                token_a = None
+                resp_a = await client.post(
+                    f"{config.KEYCLOAK_URL}/realms/{config.KEYCLOAK_REALM}/protocol/openid-connect/token",
+                    data={
+                        "grant_type": "password",
+                        "client_id": config.KEYCLOAK_CLIENT_ID,
+                        "username": user_a["username"],
+                        "password": config.DEFAULT_BOT_PASSWORD,
+                    },
+                )
+                if resp_a.status_code == 200:
+                    token_a = resp_a.json().get("access_token")
+
+                # Login as user_b
+                token_b = None
+                resp_b = await client.post(
+                    f"{config.KEYCLOAK_URL}/realms/{config.KEYCLOAK_REALM}/protocol/openid-connect/token",
+                    data={
+                        "grant_type": "password",
+                        "client_id": config.KEYCLOAK_CLIENT_ID,
+                        "username": user_b["username"],
+                        "password": config.DEFAULT_BOT_PASSWORD,
+                    },
+                )
+                if resp_b.status_code == 200:
+                    token_b = resp_b.json().get("access_token")
+
+                if token_a and token_b:
+                    # user_a swipes right on user_b
+                    swipe_url = f"{config.SWIPE_SERVICE_URL}/api/swipes"
+                    # JSON field names are camelCase to match the .NET SwipeService API contract
+                    r1 = await client.post(
+                        swipe_url,
+                        headers={"Authorization": f"Bearer {token_a}"},
+                        json={"targetUserId": user_b.get("keycloak_id", user_b["username"]), "direction": "right"},
+                    )
+                    # user_b swipes right on user_a
+                    r2 = await client.post(
+                        swipe_url,
+                        headers={"Authorization": f"Bearer {token_b}"},
+                        json={"targetUserId": user_a.get("keycloak_id", user_a["username"]), "direction": "right"},
+                    )
+                    match_created = r1.status_code in (200, 201) and r2.status_code in (200, 201)
+                    logs.append(f"Swipe A→B: {r1.status_code}, Swipe B→A: {r2.status_code}")
+        except Exception as exc:
+            logs.append(f"⚠️  match swipe failed: {exc}")
+
+    return JSONResponse(
+        {
+            "user_a": {"username": user_a["username"], "email": user_a["email"]},
+            "user_b": {"username": user_b["username"], "email": user_b["email"]},
+            "match_created": match_created,
+            "mode": mode,
+            "logs": logs[-20:],
+        }
+    )
 
 
 # ─── Dashboard Page ──────────────────────────────────────────────────────────

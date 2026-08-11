@@ -1,0 +1,34 @@
+{
+  "id": "daniel-o",
+  "firstName": "Daniel",
+  "lastName": "Olofsson",
+  "age": 34,
+  "gender": "male",
+  "preferredGender": "female",
+  "bio": "IT-tekniker i Kalmar 💻 Jobbar remote, lever fritt. Gillar havet och tabletop-spel",
+  "city": "Kalmar",
+  "latitude": 56.6634,
+  "longitude": 16.3568,
+  "occupation": "IT-tekniker",
+  "interests": [
+    "tabletop-RPG",
+    "havet",
+    "kayak",
+    "programmering",
+    "vin"
+  ],
+  "modes": [
+    "synthetic"
+  ],
+  "behavior": {
+    "swipeRightProbability": 0.5,
+    "avgActionDelaySec": 6,
+    "minResponseDelaySec": 20,
+    "maxResponseDelaySec": 180,
+    "chattiness": "medium",
+    "activeStartHourUtc": 9,
+    "activeEndHourUtc": 23,
+    "maxDailySwipes": 20,
+    "maxDailyMessages": 15
+  }
+}

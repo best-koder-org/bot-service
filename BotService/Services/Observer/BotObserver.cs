@@ -15,6 +15,7 @@ public class BotObserver
 {
     private readonly IServiceProvider _serviceProvider;
     private readonly ILogger<BotObserver> _logger;
+    private readonly IWebhookNotifier _webhook;
     
     /// <summary>Latency threshold in ms before flagging as slow</summary>
     private const long SlowResponseThresholdMs = 3000;
@@ -24,10 +25,11 @@ public class BotObserver
     private readonly object _lock = new();
     private const int MaxRecentFindings = 100;
 
-    public BotObserver(IServiceProvider serviceProvider, ILogger<BotObserver> logger)
+    public BotObserver(IServiceProvider serviceProvider, ILogger<BotObserver> logger, IWebhookNotifier webhook)
     {
         _serviceProvider = serviceProvider;
         _logger = logger;
+        _webhook = webhook;
     }
 
     /// <summary>
@@ -121,6 +123,9 @@ public class BotObserver
             finding.ContextJson = JsonSerializer.Serialize(context);
         
         await PersistFinding(finding);
+
+        // T381: Push critical/high findings to configured webhook
+        _ = _webhook.NotifyAsync(finding);
     }
 
     /// <summary>Get recent findings (from memory, fast)</summary>

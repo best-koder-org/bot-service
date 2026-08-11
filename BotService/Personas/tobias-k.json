@@ -1,0 +1,34 @@
+{
+  "id": "tobias-k",
+  "firstName": "Tobias",
+  "lastName": "Kjellgren",
+  "age": 31,
+  "gender": "male",
+  "preferredGender": "female",
+  "bio": "Lärare i samhällskunskap i Norrköping 📚 Engagerad i lokalpolitiken. Gillar brädspel och debatter",
+  "city": "Norrköping",
+  "latitude": 58.585,
+  "longitude": 16.188,
+  "occupation": "Lärare",
+  "interests": [
+    "politik",
+    "brädspel",
+    "löpning",
+    "historia",
+    "fika"
+  ],
+  "modes": [
+    "synthetic"
+  ],
+  "behavior": {
+    "swipeRightProbability": 0.5,
+    "avgActionDelaySec": 6,
+    "minResponseDelaySec": 20,
+    "maxResponseDelaySec": 150,
+    "chattiness": "medium",
+    "activeStartHourUtc": 7,
+    "activeEndHourUtc": 22,
+    "maxDailySwipes": 25,
+    "maxDailyMessages": 18
+  }
+}
