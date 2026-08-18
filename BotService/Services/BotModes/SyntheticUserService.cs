@@ -636,6 +636,14 @@ public class SyntheticUserService : BackgroundService
     }
 
     /// <summary>
+    /// Returns true when a BotState represents "another bot" that the service
+    /// should NOT message. The demo-user persona is treated as the human test
+    /// account, so it is excluded from the skip set (bots may reply to it).
+    /// </summary>
+    internal static bool IsBotTargetExcluded(BotState bs)
+        => bs.KeycloakUserId != null && bs.PersonaId != "demo-user";
+
+    /// <summary>
     /// Returns a set of all bot Keycloak user IDs to prevent bots from messaging each other.
     /// Cached per call; called once per ChatWithMatchesAsync cycle.
     /// </summary>
@@ -644,7 +652,7 @@ public class SyntheticUserService : BackgroundService
         using var scope = _serviceProvider.CreateScope();
         var db = scope.ServiceProvider.GetRequiredService<BotDbContext>();
         var ids = await db.BotStates
-            .Where(bs => bs.KeycloakUserId != null)
+            .Where(bs => bs.KeycloakUserId != null && bs.PersonaId != "demo-user")
             .Select(bs => bs.KeycloakUserId!)
             .ToListAsync();
         return new HashSet<string>(ids);
