@@ -27,8 +27,8 @@
     "minResponseDelaySec": 60,
     "maxResponseDelaySec": 300,
     "chattiness": "high",
-    "activeStartHourUtc": 5,
-    "activeEndHourUtc": 20,
+    "activeStartHourUtc": 0,
+    "activeEndHourUtc": 23,
     "maxDailySwipes": 30,
     "maxDailyMessages": 500
   },
