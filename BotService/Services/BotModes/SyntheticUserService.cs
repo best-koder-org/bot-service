@@ -1,3 +1,4 @@
+using System.Collections.Concurrent;
 using System.Text.Json;
 using BotService.Configuration;
 using BotService.Data;
@@ -35,6 +36,10 @@ public class SyntheticUserService : BackgroundService
     private readonly IConversationEngine _conversationEngine;
     private readonly Random _random = new();
     private readonly BotObserver _observer;
+    private readonly DemoRuntimeState? _demoState;
+
+    /// <summary>Last time each bot refreshed its blocked-by set (throttled to reduce safety-service load).</summary>
+    private readonly ConcurrentDictionary<string, DateTime> _lastBlockedRefresh = new();
 
     /// <summary>Max unanswered messages to any single user before flagging unresponsive</summary>
     private const int MaxUnansweredMessages = 20;
@@ -46,7 +51,8 @@ public class SyntheticUserService : BackgroundService
         BotPersonaEngine personaEngine,
         MessageContentProvider messageProvider,
         IConversationEngine conversationEngine,
-        BotObserver observer)
+        BotObserver observer,
+        DemoRuntimeState? demoState = null)
     {
         _serviceProvider = serviceProvider;
         _logger = logger;
@@ -55,7 +61,14 @@ public class SyntheticUserService : BackgroundService
         _messageProvider = messageProvider;
         _conversationEngine = conversationEngine;
         _observer = observer;
+        _demoState = demoState;
     }
+
+    /// <summary>Demo mode is active when the runtime toggle says so, else the appsettings value.</summary>
+    private bool DemoEnabled => _demoState?.Enabled ?? _config.CurrentValue.Demo.Enabled;
+
+    /// <summary>Reactive-only (like-back) is active per runtime toggle, else appsettings.</summary>
+    private bool DemoReactiveOnly => _demoState?.ReactiveOnly ?? _config.CurrentValue.Demo.ReactiveOnly;
 
     protected override async Task ExecuteAsync(CancellationToken stoppingToken)
     {
@@ -102,9 +115,17 @@ public class SyntheticUserService : BackgroundService
         var demoPersonas = _personaEngine.GetPersonasForMode("demo");
         await ProvisionPersonasAsync(demoPersonas, ct);
 
-        // 2. Provision all synthetic bots
+        // 2. Provision all synthetic bots (they all get profiles so they appear in the
+        // discover feed) but cap how many actually RUN so the demo stack stays responsive.
         var syntheticPersonas = _personaEngine.GetPersonasForMode("synthetic");
         await ProvisionPersonasAsync(syntheticPersonas, ct);
+        await ApplyActiveBotLimitAsync(ct);
+
+        // Self-healing dev conveniences on restart:
+        // (a) fresh daily swipe/message counters, (b) correct bot→profile mappings
+        // so messaging match checks never 403 on stale data.
+        await ResetDailyCountersOnStartupAsync(ct);
+        await SyncBotMappingsOnStartupAsync(ct);
 
         // 3. Pre-seed mutual likes so demo-user has matches immediately
         await PreSeedMutualLikesAsync(ct);
@@ -113,6 +134,98 @@ public class SyntheticUserService : BackgroundService
         {
             _logger.LogWarning("No synthetic personas loaded — only demo-user provisioned");
         }
+    }
+
+    /// <summary>
+    /// Cap the number of ACTIVE synthetic bots (Demo.ActiveBotLimit). All personas stay
+    /// provisioned (visible in discover) but only the first N run their behavior loop.
+    /// Keeps the dev stack responsive and avoids overwhelming safety-service with 429s.
+    /// </summary>
+    private async Task ApplyActiveBotLimitAsync(CancellationToken ct)
+    {
+        var limit = _config.CurrentValue.Demo.ActiveBotLimit;
+        if (limit <= 0) return;
+
+        using var scope = _serviceProvider.CreateScope();
+        var db = scope.ServiceProvider.GetRequiredService<BotDbContext>();
+
+        var activeBots = await db.BotStates
+            .Where(b => b.Status == BotStatus.Active && b.PersonaId != "demo-user")
+            .OrderBy(b => b.Id)
+            .ToListAsync(ct);
+
+        var changed = false;
+        for (var i = 0; i < activeBots.Count; i++)
+        {
+            if (i >= limit)
+            {
+                activeBots[i].Status = BotStatus.Idle;
+                changed = true;
+            }
+        }
+        if (changed)
+        {
+            await db.SaveChangesAsync(ct);
+            _logger.LogInformation("Active bot limit {Limit} applied: kept {Kept} active, idled the rest",
+                limit, Math.Min(activeBots.Count, limit));
+        }
+    }
+
+    /// <summary>
+    /// Zero the daily swipe/message counters for active bots on startup so restarts don't
+    /// leave bots blocked by MaxDailySwipes/MaxDailyMessages mid-day. (Demo/dev convenience.)
+    /// </summary>
+    private async Task ResetDailyCountersOnStartupAsync(CancellationToken ct)
+    {
+        using var scope = _serviceProvider.CreateScope();
+        var db = scope.ServiceProvider.GetRequiredService<BotDbContext>();
+
+        var bots = await db.BotStates
+            .Where(b => b.Status == BotStatus.Active)
+            .ToListAsync(ct);
+        foreach (var b in bots)
+        {
+            b.SwipesToday = 0;
+            b.MessagesSentToday = 0;
+            b.CounterResetDate = DateTime.UtcNow.Date;
+        }
+        if (bots.Count > 0)
+        {
+            await db.SaveChangesAsync(ct);
+            _logger.LogInformation("Reset daily counters for {Count} active bots on startup", bots.Count);
+        }
+    }
+
+    /// <summary>
+    /// Push the authoritative (keycloakId → profileId) mapping for every bot to swipe-service
+    /// so the messaging match check resolves correctly without a manual mapping repair.
+    /// </summary>
+    private async Task SyncBotMappingsOnStartupAsync(CancellationToken ct)
+    {
+        using var scope = _serviceProvider.CreateScope();
+        var db = scope.ServiceProvider.GetRequiredService<BotDbContext>();
+        var apiClient = scope.ServiceProvider.GetRequiredService<DatingAppApiClient>();
+        var keycloak = scope.ServiceProvider.GetRequiredService<KeycloakBotProvisioner>();
+
+        var pairs = await db.BotStates
+            .Where(b => b.KeycloakUserId != null && b.KeycloakUserId != "" && b.ProfileId != null)
+            .Select(b => new { b.ProfileId, b.KeycloakUserId })
+            .ToListAsync(ct);
+        var list = pairs
+            .Where(p => p.ProfileId.HasValue)
+            .Select(p => (p.ProfileId!.Value, p.KeycloakUserId!))
+            .ToList();
+        if (list.Count == 0) return;
+
+        var demoPersona = _personaEngine.GetPersonaById("demo-user");
+        if (demoPersona == null) return;
+
+        var (token, _, _) = await keycloak.GetBotTokenAsync(demoPersona, ct);
+        if (string.IsNullOrEmpty(token)) return;
+
+        var ok = await apiClient.SyncBotMappingsAsync(list, token, ct);
+        _logger.LogInformation("Synced {Count} bot mappings to swipe-service: {Result}",
+            list.Count, ok ? "ok" : "failed");
     }
 
 
@@ -227,11 +340,16 @@ public class SyntheticUserService : BackgroundService
             return;
         }
 
-        // Pick female bots to create mutual matches with
-        var femaleBotIds = new[] { "astrid", "linnea", "maja", "elsa" };
+        // Pick bots to pre-like the demo user (config-driven).
+        var demo = _config.CurrentValue.Demo;
+        var preSeedIds = (demo.PreSeedBotIds ?? new List<string>())
+            .Take(Math.Max(0, demo.PreSeedBotCount))
+            .ToList();
+        if (preSeedIds.Count == 0) return;
+
         var matchCount = 0;
 
-        foreach (var botId in femaleBotIds)
+        foreach (var botId in preSeedIds)
         {
             var botState = await db.BotStates.FirstOrDefaultAsync(b => b.PersonaId == botId, ct);
             if (botState?.ProfileId == null || botState.AccessToken == null) continue;
@@ -272,8 +390,9 @@ public class SyntheticUserService : BackgroundService
                     await db.SaveChangesAsync(ct);
                 }
 
-                // Demo-user swipes right on bot → mutual match!
-                if (demoState.AccessToken != null)
+                // Demo-user swipes right on bot → mutual match (only when auto-reciprocate is enabled).
+                // When disabled, the human tester swipes on the bot themselves and matches instantly.
+                if (demo.PreSeedAutoReciprocate && demoState.AccessToken != null)
                 {
                     var (s2, isMutual) = await apiClient.SwipeAsync(
                         demoState.ProfileId.Value, botState.ProfileId.Value, true, demoState.AccessToken, ct);
@@ -392,16 +511,27 @@ public class SyntheticUserService : BackgroundService
 
             try
             {
-                // ─── Safety: refresh blocked-by set each cycle ─────
-                var blockedIds = await apiClient.GetBlockedByIdsAsync(bot.AccessToken, ct);
-                bot.SetBlockedByIds(blockedIds);
-                if (blockedIds.Count > 0)
-                    _logger.LogDebug("Bot {Id}: blocked by {Count} users", bot.PersonaId, blockedIds.Count);
+                // ─── Safety: refresh blocked-by set (throttled to once per 60s per bot) ─────
+                var now = DateTime.UtcNow;
+                if (!_lastBlockedRefresh.TryGetValue(bot.PersonaId, out var lastRefresh) ||
+                    (now - lastRefresh).TotalSeconds >= 60)
+                {
+                    var blockedIds = await apiClient.GetBlockedByIdsAsync(bot.AccessToken, ct);
+                    bot.SetBlockedByIds(blockedIds);
+                    _lastBlockedRefresh[bot.PersonaId] = now;
+                    if (blockedIds.Count > 0)
+                        _logger.LogDebug("Bot {Id}: blocked by {Count} users", bot.PersonaId, blockedIds.Count);
+                }
 
-                // Phase 1: Discover & Swipe
-                // Phase 1: Discover & Swipe — skip if all candidates already swiped
-                // (run once every 30 cycles to avoid wasting time on "Already swiped" errors)
-                if (bot.SwipesToday < persona.Behavior.MaxDailySwipes && _random.Next(30) == 0)
+                // Phase 1: Discover & Swipe.
+                // In Demo ReactiveOnly mode bots do NOT proactively swipe random users — they
+                // only reciprocate incoming human likes (like-back), so matches are always
+                // human-initiated. Proactive discovery runs only when demo mode is off.
+                if (DemoEnabled && DemoReactiveOnly)
+                {
+                    await ReciprocateIncomingLikesAsync(bot, persona, apiClient, ct);
+                }
+                else if (bot.SwipesToday < persona.Behavior.MaxDailySwipes && _random.Next(30) == 0)
                 {
                     await DiscoverAndSwipeAsync(bot, persona, apiClient, ct);
                 }
@@ -473,6 +603,63 @@ public class SyntheticUserService : BackgroundService
             // Small delay between swipes (1-3s)
             await Task.Delay(TimeSpan.FromSeconds(_random.Next(1, 4)), ct);
         }
+    }
+
+    /// <summary>
+    /// Reactive "like-back": reciprocate incoming likes from human users so a match only forms
+    /// when the human swiped first. Bounded per cycle to keep DB volume low (MaxLikeBackPerCycle).
+    /// Like-backs are human-initiated reactions, so they are NOT subject to the proactive
+    /// daily-swipe cap (MaxDailySwipes) — that cap only limits random discover swiping.
+    /// </summary>
+    private async Task ReciprocateIncomingLikesAsync(
+        BotState bot, BotPersona persona, DatingAppApiClient apiClient, CancellationToken ct)
+    {
+        if (bot.AccessToken == null || bot.ProfileId == null) return;
+
+        var likes = await apiClient.GetLikesReceivedAsync(bot.ProfileId.Value, bot.AccessToken, ct);
+        if (likes.Length == 0) return;
+
+        var allBotKeycloakIds = await GetAllBotKeycloakIdsAsync();
+        var max = Math.Min(likes.Length, Math.Max(1, _config.CurrentValue.Demo.MaxLikeBackPerCycle));
+        var likeBacks = 0;
+
+        foreach (var like in likes.Take(max))
+        {
+            ct.ThrowIfCancellationRequested();
+
+            if (!like.TryGetProperty("userId", out var userIdProp) ||
+                !userIdProp.TryGetInt32(out var likerProfileId) || likerProfileId <= 0)
+            {
+                continue;
+            }
+
+            // Resolve liker to Keycloak ID so we can skip other bots + blocked/unresponsive users.
+            var likerKeycloakId = await apiClient.GetKeycloakIdForProfileAsync(
+                likerProfileId, bot.AccessToken, ct);
+            if (string.IsNullOrEmpty(likerKeycloakId)) continue;
+
+            if (allBotKeycloakIds.Contains(likerKeycloakId)) continue; // never like another bot
+            if (bot.IsBlockedBy(likerKeycloakId)) continue;            // user blocked us
+            if (bot.IsUnresponsive(likerKeycloakId)) continue;         // user ignored us before
+
+            var (success, isMutual) = await apiClient.SwipeAsync(
+                bot.ProfileId.Value, likerProfileId, true, bot.AccessToken, ct);
+
+            if (success)
+            {
+                bot.SwipesToday++;
+                if (isMutual) bot.MatchCount++;
+                likeBacks++;
+                _logger.LogInformation("Bot {BotId}: liked back {Target} {Match}",
+                    bot.PersonaId, likerProfileId, isMutual ? "→ MATCH! 🎉" : "");
+            }
+
+            // Small delay to spread load
+            await Task.Delay(TimeSpan.FromMilliseconds(_random.Next(500, 1500)), ct);
+        }
+
+        if (likeBacks > 0)
+            _logger.LogDebug("Bot {BotId}: liked back {Count} human(s) this cycle", bot.PersonaId, likeBacks);
     }
 
     private async Task ChatWithMatchesAsync(
@@ -556,6 +743,16 @@ public class SyntheticUserService : BackgroundService
             var recentMessages = await apiClient.GetConversationMessagesAsync(
                 otherUserId, bot.AccessToken!, ct);
 
+            // ─── Opener gate (Demo mode): only send the FIRST message when OpenerOnMatch
+            // is enabled. This keeps bots purely reactive unless the demo explicitly allows openers.
+            var demo = _config.CurrentValue.Demo;
+            if (recentMessages.Count == 0 && DemoEnabled && !demo.OpenerOnMatch)
+            {
+                _logger.LogDebug("Bot {BotId}: opener disabled in demo mode, waiting for {Target}",
+                    bot.PersonaId, otherUserId);
+                continue;
+            }
+
             // ─── Turn-taking: only reply if user sent the last message ─────
             // If conversation exists and bot sent the last message, wait for user reply
             if (recentMessages.Count > 0)
@@ -622,7 +819,8 @@ public class SyntheticUserService : BackgroundService
             message = _messageProvider.GetMessageForDepth(bot.ConversationCount);
         }
         
-        var sent = await apiClient.SendMessageAsync(otherUserId, message, bot.AccessToken!, ct);
+        var sent = await apiClient.SendMessageAsync(otherUserId, message, bot.AccessToken!, ct,
+            bot.ProfileId?.ToString());
         if (sent)
         {
             bot.MessagesSentToday++;

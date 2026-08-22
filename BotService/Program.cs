@@ -6,6 +6,8 @@ using BotService.Services.Content;
 using BotService.Services.Conversation;
 using BotService.Services.Keycloak;
 using BotService.Services.Llm;
+using BotService.Services.Onboarding;
+using BotService.Services.Whisper;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Options;
 using Serilog;
@@ -45,6 +47,7 @@ builder.Services.AddHttpClient<DatingAppApiClient>().ConfigurePrimaryHttpMessage
 builder.Services.AddHttpClient<GeminiLlmProvider>().ConfigurePrimaryHttpMessageHandler(GetHandler);
 builder.Services.AddHttpClient<GroqLlmProvider>().ConfigurePrimaryHttpMessageHandler(GetHandler);
 builder.Services.AddHttpClient<OllamaLlmProvider>().ConfigurePrimaryHttpMessageHandler(GetHandler);
+builder.Services.AddHttpClient<IWhisperApiClient, WhisperApiClient>().ConfigurePrimaryHttpMessageHandler(GetHandler);
 builder.Services.AddHttpClient("").ConfigurePrimaryHttpMessageHandler(GetHandler); // IHttpClientFactory for ChaosAgent
 
 
@@ -112,6 +115,25 @@ builder.Services.AddHostedService<LoadActorService>();
 builder.Services.AddHostedService<ChaosAgentService>();
 builder.Services.AddHostedService<BotService.Services.Observer.BotReporter>();
 
+// Server-side voice-feedback transcription (replaces the laptop whisper script)
+builder.Services.AddHostedService<WhisperTranscriptionService>();
+
+// ── Tester Demo Mode (reactive fake users + targeted bot-data purge) ──
+// Initialize the runtime toggle from config so appsettings Demo.Enabled is honored
+// at startup (the dashboard / /api/demo can then toggle it live).
+builder.Services.AddSingleton(sp =>
+{
+    var cfg = sp.GetRequiredService<IOptions<BotServiceOptions>>().Value;
+    return new DemoRuntimeState
+    {
+        Enabled = cfg.Demo.Enabled,
+        ReactiveOnly = cfg.Demo.ReactiveOnly
+    };
+});
+builder.Services.AddSingleton<DemoDataPurgeService>();
+builder.Services.AddHostedService(sp => sp.GetRequiredService<DemoDataPurgeService>());
+builder.Services.AddHostedService<NewUserOnboardingService>();
+
 // Controllers + Swagger
 builder.Services.AddControllers();
 builder.Services.AddEndpointsApiExplorer();
@@ -154,6 +176,14 @@ CREATE TABLE IF NOT EXISTS ""UserFeedbacks"" (
 CREATE INDEX IF NOT EXISTS ""IX_UserFeedbacks_ReceivedAt"" ON ""UserFeedbacks"" (""ReceivedAt"");
 CREATE INDEX IF NOT EXISTS ""IX_UserFeedbacks_ProcessedAt"" ON ""UserFeedbacks"" (""ProcessedAt"");
 CREATE INDEX IF NOT EXISTS ""IX_UserFeedbacks_SubmitterKeycloakId"" ON ""UserFeedbacks"" (""SubmitterKeycloakId"");
+
+CREATE TABLE IF NOT EXISTS ""OnboardingTargets"" (
+    ""Id"" INTEGER NOT NULL CONSTRAINT ""PK_OnboardingTargets"" PRIMARY KEY AUTOINCREMENT,
+    ""KeycloakUserId"" TEXT NOT NULL,
+    ""ProfileId"" INTEGER NOT NULL,
+    ""AssistedAt"" TEXT NOT NULL
+);
+CREATE UNIQUE INDEX IF NOT EXISTS ""IX_OnboardingTargets_KeycloakUserId"" ON ""OnboardingTargets"" (""KeycloakUserId"");
 ");
 }
 

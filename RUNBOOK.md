@@ -183,3 +183,58 @@ curl -X POST http://localhost:8080/api/admin/reset-interactions \
 - `api_latency_p99 > 2000ms` → check service health
 - `llm_failure_rate > 20%` → check API keys/provider status
 - `bot_match_rate < 20%` → persona quality may need tuning (T316)
+
+## Tester Demo Mode — bots as realistic fake users
+
+Makes the app feel populated for human testers **without spamming or filling the DBs**.
+
+- **Reactive-only**: bots never proactively swipe random users. They only *like back*
+  when a human swipes right on them, so matches are always human-initiated.
+- **Onboarding assist**: fresh human signups get pre-likes from `MaxOnboardingBots`
+  compatible bots, so their first right-swipes match instantly.
+- **Opener**: one opener per match, then strict turn-taking (bots only reply when the
+  human sent the last message).
+- **Targeted purge**: bot-generated rows carry `IsBotGenerated` and are deleted by the
+  bot-purge endpoints. Real user data is NEVER touched.
+
+### API — `/api/demo` (bot-service :8089)
+
+| Method | Path | Description |
+|--------|------|-------------|
+| `GET` | `/api/demo/status` | Demo mode state + active bots / matches / messages / onboarded testers |
+| `POST` | `/api/demo/enable` | Turn on: `{ "enabled": true, "reactiveOnly": true }` |
+| `POST` | `/api/demo/disable` | Turn off + purge all bot interactions (PurgeOnStop) |
+| `POST` | `/api/demo/purge?olderThanHours=0` | Purge bot data now (optional TTL filter) |
+
+### Targeted purge endpoints (per service + gateway composite)
+
+| Service | Endpoint |
+|---------|----------|
+| swipe-service | `DELETE /api/admin/bot-swipe-data?olderThanHours=24` |
+| messaging-service | `DELETE /api/admin/bot-messages?olderThanHours=24` |
+| MatchmakingService | `DELETE /api/admin/bot-match-data?olderThanHours=24` |
+| YARP composite | `POST /api/admin/reset-bot-interactions?olderThanHours=24` |
+
+`olderThanHours=0` (default) deletes ALL bot rows; a positive value deletes only rows
+older than N hours (keeps a tester's active conversation). All guarded to
+Dev/Staging/Demo environments.
+
+### Config — `BotService:Demo` (appsettings.json)
+
+| Key | Default | Meaning |
+|-----|---------|---------|
+| `Enabled` | true | Master switch for demo mode |
+| `ReactiveOnly` | true | No proactive swiping; like-back + onboarding only |
+| `MaxOnboardingBots` | 5 | Bots that pre-like a fresh tester |
+| `OpenerOnMatch` | true | Send one opener per match, then turn-taking |
+| `PurgeTtlHours` | 24 | Auto-purge bot rows older than this (0 = disabled) |
+| `PurgeOnStop` | true | Purge all bot data when demo mode is disabled |
+| `OnboardingCheckIntervalSec` | 60 | How often to poll for new testers |
+| `PreSeedBotCount` / `PreSeedBotIds` | 4 / astrid,linnea,maja,elsa | Bots that pre-like the demo user |
+| `PreSeedAutoReciprocate` | true | demo-user auto-swipes back → instant matches |
+| `MaxLikeBackPerCycle` | 5 | Like-backs per bot per cycle (bounds DB volume) |
+
+### Dashboard
+The dev dashboard (`dev_dashboard.py`, Testers tab → **Tester Demo Mode**) has
+Enable/Disable/Purge controls and live bot-data metrics.
+

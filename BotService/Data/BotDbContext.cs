@@ -11,6 +11,7 @@ public class BotDbContext : DbContext
     public DbSet<BotFinding> BotFindings { get; set; } = null!;
     public DbSet<Experiment> Experiments { get; set; } = null!;
     public DbSet<UserFeedback> UserFeedbacks { get; set; } = null!;
+    public DbSet<OnboardingTarget> OnboardingTargets { get; set; } = null!;
     
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
@@ -47,6 +48,12 @@ public class BotDbContext : DbContext
             entity.HasIndex(e => e.ReceivedAt);
             entity.HasIndex(e => e.ProcessedAt);
             entity.HasIndex(e => e.SubmitterKeycloakId);
+        });
+
+        modelBuilder.Entity<OnboardingTarget>(entity =>
+        {
+            entity.HasKey(e => e.Id);
+            entity.HasIndex(e => e.KeycloakUserId).IsUnique();
         });
     }
 }

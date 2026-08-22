@@ -220,19 +220,44 @@ public class DatingAppApiClient
         return Array.Empty<JsonElement>();
     }
 
+    /// <summary>
+    /// Get users who have liked this profile but aren't matched yet (like-back source).
+    /// GET /api/Swipes/received-likes/{profileId} returns [{ userId, likedAt }] where userId is a profile ID.
+    /// </summary>
+    public async Task<JsonElement[]> GetLikesReceivedAsync(int profileId, string token, CancellationToken ct)
+    {
+        var result = await GetAsync($"{_endpoints.SwipeService}/api/Swipes/received-likes/{profileId}", token, ct);
+        if (result == null) return Array.Empty<JsonElement>();
+
+        if (result.Value.ValueKind == JsonValueKind.Array)
+            return result.Value.EnumerateArray().ToArray();
+        if (result.Value.TryGetProperty("data", out var data) && data.ValueKind == JsonValueKind.Array)
+            return data.EnumerateArray().ToArray();
+
+        return Array.Empty<JsonElement>();
+    }
+
     // ─── Messaging (REST) ───────────────────────────────────────
 
     /// <summary>Send a message via REST POST /api/Messages</summary>
     public async Task<bool> SendMessageAsync(
-        string receiverKeycloakId, string content, string token, CancellationToken ct)
+        string receiverKeycloakId, string content, string token, CancellationToken ct,
+        string? botProfileId = null)
     {
         var payload = new
         {
             recipientUserId = receiverKeycloakId,
             text = content
         };
+
+        // X-Bot-ProfileId lets messaging-service stamp IsBotGenerated for the targeted bot purge.
+        Dictionary<string, string>? headers = null;
+        if (!string.IsNullOrEmpty(botProfileId))
+        {
+            headers = new Dictionary<string, string> { ["X-Bot-ProfileId"] = botProfileId };
+        }
         
-        var result = await PostAsync($"{_endpoints.MessagingService}/api/Messages", payload, token, ct);
+        var result = await PostAsync($"{_endpoints.MessagingService}/api/Messages", payload, token, ct, headers);
         return result != null;
     }
 
@@ -430,6 +455,43 @@ public class DatingAppApiClient
         {
             return new HashSet<string>();
         }
+    }
+
+    // ─── Demo Mode: purge & onboarding ──────────────────────────
+
+    /// <summary>Purge bot-flagged interactions across all services via the gateway composite.</summary>
+    public async Task<bool> PurgeBotInteractionsAsync(string token, CancellationToken ct, int olderThanHours = 0)
+    {
+        var ttl = olderThanHours > 0 ? $"?olderThanHours={olderThanHours}" : string.Empty;
+        var result = await PostAsync($"{_endpoints.Gateway}/api/admin/reset-bot-interactions{ttl}", new { }, token, ct);
+        return result != null;
+    }
+
+    /// <summary>Push bot (keycloakId, profileId) mappings to swipe-service so the messaging match check resolves correctly.</summary>
+    public async Task<bool> SyncBotMappingsAsync(
+        List<(int ProfileId, string KeycloakId)> pairs, string token, CancellationToken ct)
+    {
+        var payload = new
+        {
+            mappings = pairs.Select(p => new { profileId = p.ProfileId, keycloakId = p.KeycloakId }).ToList()
+        };
+        var result = await PostAsync($"{_endpoints.SwipeService}/api/admin/sync-bot-mappings", payload, token, ct);
+        return result != null;
+    }
+
+    /// <summary>Fetch recently-created human (non-bot) profiles for onboarding assist.</summary>
+    public async Task<JsonElement[]> GetOnboardingCandidatesAsync(string token, string sinceUtc, CancellationToken ct)
+    {
+        var url = $"{_endpoints.UserService}/api/bot/onboarding-candidates?sinceUtc={Uri.EscapeDataString(sinceUtc)}";
+        var result = await GetAsync(url, token, ct);
+        if (result == null) return Array.Empty<JsonElement>();
+
+        if (result.Value.ValueKind == JsonValueKind.Array)
+            return result.Value.EnumerateArray().ToArray();
+        if (result.Value.TryGetProperty("data", out var data) && data.ValueKind == JsonValueKind.Array)
+            return data.EnumerateArray().ToArray();
+
+        return Array.Empty<JsonElement>();
     }
 
     // ─── Instrumented Helpers ───────────────────────────────────

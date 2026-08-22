@@ -1,8 +1,10 @@
+using BotService.Configuration;
 using BotService.Data;
 using BotService.Models;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.Options;
 using System.IdentityModel.Tokens.Jwt;
 
 namespace BotService.Controllers;
@@ -23,12 +25,18 @@ public class UserFeedbackController : ControllerBase
     private readonly BotDbContext _db;
     private readonly ILogger<UserFeedbackController> _logger;
     private readonly IWebHostEnvironment _env;
+    private readonly IOptions<BotServiceOptions> _config;
 
-    public UserFeedbackController(BotDbContext db, ILogger<UserFeedbackController> logger, IWebHostEnvironment env)
+    public UserFeedbackController(
+        BotDbContext db,
+        ILogger<UserFeedbackController> logger,
+        IWebHostEnvironment env,
+        IOptions<BotServiceOptions> config)
     {
         _db = db;
         _logger = logger;
         _env = env;
+        _config = config;
     }
 
     /// <summary>Submit a feedback item. Multipart form-data: audio file (optional) + text fields.</summary>
@@ -54,7 +62,7 @@ public class UserFeedbackController : ControllerBase
                 return BadRequest(new { error = $"Unsupported audio extension '{ext}'. Allowed: {string.Join(", ", AllowedExtensions)}" });
             }
 
-            var dir = Path.Combine(_env.ContentRootPath, "Data", "UserFeedback");
+            var dir = ResolveAudioDir();
             Directory.CreateDirectory(dir);
             var fileName = $"{Guid.NewGuid():N}{ext}";
             storedPath = Path.Combine(dir, fileName);
@@ -153,6 +161,17 @@ public class UserFeedbackController : ControllerBase
         entity.ProcessedAt = DateTime.UtcNow;
         await _db.SaveChangesAsync();
         return Ok(ToDto(entity));
+    }
+
+    /// <summary>Resolve the configured directory for feedback audio files.</summary>
+    private string ResolveAudioDir()
+    {
+        var configured = _config.Value.Feedback.AudioPath;
+        if (string.IsNullOrWhiteSpace(configured))
+            configured = "Data/UserFeedback";
+        return Path.IsPathRooted(configured)
+            ? configured
+            : Path.Combine(_env.ContentRootPath, configured);
     }
 
     private string? ExtractKeycloakSubject()

@@ -25,6 +25,9 @@ public class BotServiceOptions
     /// <summary>Conversation engine configuration</summary>
     public ConversationOptions Conversation { get; set; } = new();
     
+    /// <summary>"Tester Demo Mode" — makes bots behave like realistic fake users for human testers.</summary>
+    public DemoModeOptions Demo { get; set; } = new();
+    
     /// <summary>Startup delay in seconds before bots begin acting</summary>
     public int StartupDelaySec { get; set; } = 15;
     
@@ -33,6 +36,12 @@ public class BotServiceOptions
     
     /// <summary>Webhook notification config</summary>
     public WebhookOptions Webhook { get; set; } = new();
+
+    /// <summary>Server-side voice-feedback transcription (whisper.cpp engine).</summary>
+    public WhisperOptions Whisper { get; set; } = new();
+
+    /// <summary>User feedback (voice memo) storage settings.</summary>
+    public FeedbackOptions Feedback { get; set; } = new();
 }
 
 public class KeycloakOptions
@@ -54,6 +63,8 @@ public class ServiceEndpoints
     public string PhotoService { get; set; } = "http://localhost:8085";
     public string MessagingHub { get; set; } = "http://localhost:8086/messagingHub";
     public string SafetyService { get; set; } = "http://localhost:8088";
+    /// <summary>YARP gateway (hosts the composite admin reset endpoints)</summary>
+    public string Gateway { get; set; } = "http://localhost:8080";
     /// <summary>Internal API key for service-to-service calls (X-Internal-API-Key header)</summary>
     public string InternalApiKey { get; set; } = "";
 }
@@ -70,6 +81,56 @@ public class SyntheticModeOptions
 {
     public bool Enabled { get; set; } = true;
     public int CycleIntervalSec { get; set; } = 30;
+}
+
+/// <summary>
+/// "Tester Demo Mode" — makes the app feel populated for human testers.
+/// In ReactiveOnly mode bots never proactively swipe random users; they only
+/// (a) reciprocate incoming human likes, (b) run targeted onboarding assist for
+/// new testers, and (c) send at most one opener per human-initiated match.
+/// </summary>
+public class DemoModeOptions
+{
+    /// <summary>Master switch for demo mode. Off = legacy proactive bot behavior.</summary>
+    public bool Enabled { get; set; } = false;
+
+    /// <summary>Bots never proactively swipe random users; they only like-back + onboarding assist.</summary>
+    public bool ReactiveOnly { get; set; } = true;
+
+    /// <summary>How many compatible bots pre-like a freshly signed-up tester.</summary>
+    public int MaxOnboardingBots { get; set; } = 5;
+
+    /// <summary>Send ONE opener after a human-initiated match (then strict turn-taking).</summary>
+    public bool OpenerOnMatch { get; set; } = true;
+
+    /// <summary>Auto-purge bot-flagged interactions older than this many hours (0 = disabled).</summary>
+    public int PurgeTtlHours { get; set; } = 24;
+
+    /// <summary>Purge bot-flagged interactions when demo mode is turned off.</summary>
+    public bool PurgeOnStop { get; set; } = true;
+
+    /// <summary>How often to poll for new testers to onboard (seconds).</summary>
+    public int OnboardingCheckIntervalSec { get; set; } = 60;
+
+    /// <summary>How many bots pre-like the built-in demo user on startup.</summary>
+    public int PreSeedBotCount { get; set; } = 4;
+
+    /// <summary>Also auto-reciprocate the pre-seed likes from the demo-user side (instant matches).</summary>
+    public bool PreSeedAutoReciprocate { get; set; } = true;
+
+    /// <summary>Personas that pre-like the demo user on startup.</summary>
+    public List<string> PreSeedBotIds { get; set; } = new() { "astrid", "linnea", "maja", "elsa" };
+
+    /// <summary>Max like-backs a bot performs per cycle (bounds DB volume).</summary>
+    public int MaxLikeBackPerCycle { get; set; } = 5;
+
+    /// <summary>
+    /// Max number of synthetic bots that run their behavior loop (discover/like-back/chat).
+    /// All personas are still provisioned (they appear in the discover feed) but only this
+    /// many actually cycle — keeps the stack responsive and avoids overwhelming safety-service.
+    /// 0 = unlimited (legacy).
+    /// </summary>
+    public int ActiveBotLimit { get; set; } = 12;
 }
 
 public class WarmupModeOptions
@@ -163,4 +224,47 @@ public class ObserverOptions
     
     /// <summary>Hours between digest reports (default 6)</summary>
     public int ReportIntervalHours { get; set; } = 6;
+}
+
+/// <summary>
+/// Configuration for the in-process voice-feedback transcriber. The actual
+/// engine is a separate lightweight whisper.cpp container (whisper-service);
+/// this service just polls, uploads audio and writes transcripts back.
+/// </summary>
+public class WhisperOptions
+{
+    /// <summary>Master switch — set false to disable transcription entirely.</summary>
+    public bool Enabled { get; set; } = true;
+
+    /// <summary>Base URL of the whisper-service (whisper.cpp server).</summary>
+    public string BaseUrl { get; set; } = "http://localhost:8095";
+
+    /// <summary>Seconds between transcription passes.</summary>
+    public int IntervalSeconds { get; set; } = 30;
+
+    /// <summary>Max feedback items processed per pass.</summary>
+    public int BatchSize { get; set; } = 5;
+
+    /// <summary>Per-request HTTP timeout for a single transcription.</summary>
+    public int TimeoutSeconds { get; set; } = 300;
+
+    /// <summary>
+    /// Language hint sent to the engine. 'auto' (default) detects per request
+    /// (multilingual ggml-base handles en + sv + ...). Force 'en' or 'sv' here
+    /// to lock detection to one language.
+    /// </summary>
+    public string Language { get; set; } = "auto";
+}
+
+/// <summary>
+/// User feedback (voice memo) storage settings.
+/// </summary>
+public class FeedbackOptions
+{
+    /// <summary>
+    /// Directory (relative to ContentRootPath, or absolute) where feedback audio
+    /// files are persisted. In Docker this must point inside the mounted /app/data
+    /// volume (e.g. /app/data/UserFeedback) so recordings survive container recreation.
+    /// </summary>
+    public string AudioPath { get; set; } = "Data/UserFeedback";
 }

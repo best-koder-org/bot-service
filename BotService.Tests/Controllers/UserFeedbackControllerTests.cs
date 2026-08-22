@@ -1,3 +1,4 @@
+using BotService.Configuration;
 using BotService.Controllers;
 using BotService.Data;
 using BotService.Models;
@@ -6,6 +7,7 @@ using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging;
+using Microsoft.Extensions.Options;
 using Moq;
 using System.Text;
 
@@ -31,7 +33,19 @@ public class UserFeedbackControllerTests : IDisposable
         env.SetupGet(e => e.ContentRootPath).Returns(_tmpRoot);
         env.SetupGet(e => e.EnvironmentName).Returns("Development");
 
-        _controller = new UserFeedbackController(_db, new Mock<ILogger<UserFeedbackController>>().Object, env.Object)
+        _controller = CreateController(env.Object, _db);
+    }
+
+    private static UserFeedbackController CreateController(
+        IWebHostEnvironment env,
+        BotDbContext db,
+        FeedbackOptions? feedback = null)
+    {
+        var options = Options.Create(new BotServiceOptions
+        {
+            Feedback = new FeedbackOptions { AudioPath = feedback?.AudioPath ?? "Data/UserFeedback" }
+        });
+        return new UserFeedbackController(db, new Mock<ILogger<UserFeedbackController>>().Object, env, options)
         {
             ControllerContext = new ControllerContext { HttpContext = new DefaultHttpContext() }
         };
@@ -217,5 +231,40 @@ public class UserFeedbackControllerTests : IDisposable
         Assert.NotNull(updated);
         Assert.Equal("Hello from watcher test", updated.Transcript);
         Assert.NotNull(updated.ProcessedAt);
+    }
+
+    [Fact]
+    public async Task Submit_UsesConfiguredAbsoluteAudioPath()
+    {
+        var audioDir = Path.Combine(_tmpRoot, "custom-audio-dir");
+        var env = new Mock<IWebHostEnvironment>();
+        env.SetupGet(e => e.ContentRootPath).Returns(_tmpRoot);
+        env.SetupGet(e => e.EnvironmentName).Returns("Development");
+        var controller = CreateController(env.Object, _db,
+            new FeedbackOptions { AudioPath = audioDir });
+
+        await controller.Submit(new UserFeedbackSubmission { Audio = MakeAudio() });
+
+        var row = await _db.UserFeedbacks.SingleAsync();
+        Assert.NotNull(row.AudioFilePath);
+        Assert.StartsWith(audioDir, row.AudioFilePath);
+        Assert.True(File.Exists(row.AudioFilePath));
+    }
+
+    [Fact]
+    public async Task Submit_UsesConfiguredRelativeAudioPath_UnderContentRoot()
+    {
+        var env = new Mock<IWebHostEnvironment>();
+        env.SetupGet(e => e.ContentRootPath).Returns(_tmpRoot);
+        env.SetupGet(e => e.EnvironmentName).Returns("Development");
+        var controller = CreateController(env.Object, _db,
+            new FeedbackOptions { AudioPath = "Data/UserFeedback" });
+
+        await controller.Submit(new UserFeedbackSubmission { Audio = MakeAudio() });
+
+        var row = await _db.UserFeedbacks.SingleAsync();
+        Assert.NotNull(row.AudioFilePath);
+        Assert.StartsWith(Path.Combine(_tmpRoot, "Data", "UserFeedback"), row.AudioFilePath);
+        Assert.True(File.Exists(row.AudioFilePath));
     }
 }

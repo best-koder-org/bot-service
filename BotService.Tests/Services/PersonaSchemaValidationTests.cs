@@ -29,10 +29,13 @@ public class PersonaSchemaValidationTests
     }
 
     [Fact]
-    public void PersonasDirectory_ContainsExactly50Files()
+    public void PersonasDirectory_HasEnoughFiles()
     {
+        // This is a living catalog (was 50, now 81). Assert a healthy minimum rather
+        // than an exact brittle count so adding/removing personas doesn't break CI.
         var files = Directory.GetFiles(PersonasDir, "*.json");
-        Assert.Equal(50, files.Length);
+        Assert.True(files.Length >= 50,
+            $"Expected at least 50 persona files, found {files.Length}.");
     }
 
     [Theory]

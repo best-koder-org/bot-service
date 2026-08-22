@@ -231,7 +231,8 @@ public class PersonaVoiceTests
             "Stockholm","Göteborg","Malmö","Uppsala","Linköping","Norrköping","Lund","Umeå","Örebro",
             "Västerås","Dalarna","Norrland","Skåne","Småland","Gävle","Sundsvall","Karlstad",
             "Luleå","Borås","Jönköping","Falun","Visby","Helsingborg","Halmstad","Östersund",
-            "Kiruna","Kalmar","Växjö","Trollhättan","Södertälje","Eskilstuna"
+            "Kiruna","Kalmar","Växjö","Trollhättan","Södertälje","Eskilstuna",
+            "Härnösand"
         };
 
         foreach (var p in personas)
